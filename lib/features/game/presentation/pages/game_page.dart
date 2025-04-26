@@ -323,85 +323,160 @@ ${game.players.map((p) => '${p.name}: ${p.totalScore}').join('\n')}
             : Theme.of(context).disabledColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              player.name,
-              style: TextStyle(
-                fontSize: 16,
-                color: enabled 
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).disabledColor,
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: Text(
+                  player.name,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: enabled 
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).disabledColor,
+                  ),
+                ),
               ),
-            ),
-          ),
-          if (enabled)
-            Expanded(
-              flex: 2,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: AppTextField(
-                      controller: TextEditingController(),
-                      keyboardType: TextInputType.number,
-                      textAlign: TextAlign.center,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 8,
+              if (enabled)
+                Expanded(
+                  flex: 2,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: AppTextField(
+                          controller: TextEditingController(),
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 8,
+                          ),
+                          onSubmitted: (value) {
+                            final score = int.tryParse(value);
+                            if (score != null) {
+                              ref.read(gameControllerProvider.notifier).addScore(player.id, score);
+                            }
+                          },
+                        ),
                       ),
-                      onSubmitted: (value) {
-                        final score = int.tryParse(value);
-                        if (score != null) {
-                          ref.read(gameControllerProvider.notifier).addScore(player.id, score);
-                        }
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    onPressed: () {
-                      ref
-                          .read(gameControllerProvider.notifier)
-                          .undoLastScore(player.id);
-                    },
-                    icon: const Icon(Icons.undo),
-                    color: Theme.of(context).colorScheme.secondary,
-                  ),
-                ],
-              ),
-            )
-          else
-            Expanded(
-              flex: 2,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      player.roundScores.last.toString(),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: () {
+                          ref
+                              .read(gameControllerProvider.notifier)
+                              .undoLastScore(player.id);
+                        },
+                        icon: const Icon(Icons.undo),
                         color: Theme.of(context).colorScheme.secondary,
                       ),
-                    ),
+                    ],
                   ),
-                  IconButton(
-                    onPressed: () {
-                      ref
-                          .read(gameControllerProvider.notifier)
-                          .undoLastScore(player.id);
-                    },
-                    icon: const Icon(Icons.undo),
-                    color: Theme.of(context).colorScheme.secondary,
+                )
+              else
+                Expanded(
+                  flex: 2,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          player.roundScores.last.toString(),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          ref
+                              .read(gameControllerProvider.notifier)
+                              .undoLastScore(player.id);
+                        },
+                        icon: const Icon(Icons.undo),
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+            ],
+          ),
+          if (enabled) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildQuickScoreButton(
+                    context,
+                    ref,
+                    player,
+                    -101,
+                    '101',
+                    Colors.red,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildQuickScoreButton(
+                    context,
+                    ref,
+                    player,
+                    101,
+                    '101',
+                    Colors.green,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildQuickScoreButton(
+                    context,
+                    ref,
+                    player,
+                    202,
+                    '202',
+                    Colors.blue,
+                  ),
+                ),
+              ],
             ),
+          ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildQuickScoreButton(
+    BuildContext context,
+    WidgetRef ref,
+    Player player,
+    int score,
+    String label,
+    Color color,
+  ) {
+    return ElevatedButton(
+      onPressed: () {
+        ref.read(gameControllerProvider.notifier).addScore(player.id, score);
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color.withOpacity(0.1),
+        foregroundColor: color,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: color),
+        ),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
       ),
     );
   }
