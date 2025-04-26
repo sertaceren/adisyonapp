@@ -3,13 +3,31 @@ import 'package:uuid/uuid.dart';
 import 'package:adisyonapp/features/game/domain/entities/game.dart';
 import 'package:adisyonapp/features/game/domain/entities/player.dart';
 import 'package:adisyonapp/core/utils/ui_state.dart';
+import 'package:adisyonapp/core/database/database_helper.dart';
 
 final gameControllerProvider =
     StateNotifierProvider<GameController, UiState<Game>>((ref) {
   return GameController();
 });
 
+final gameHistoryProvider = FutureProvider<List<Game>>((ref) async {
+  final dbHelper = DatabaseHelper();
+  return await dbHelper.getAllGames();
+});
+
+final ongoingGameProvider = FutureProvider<Game?>((ref) async {
+  final dbHelper = DatabaseHelper();
+  final games = await dbHelper.getAllGames();
+  try {
+    return games.firstWhere((game) => game.status == GameStatus.inProgress);
+  } catch (e) {
+    return null;
+  }
+});
+
 class GameController extends StateNotifier<UiState<Game>> {
+  final _dbHelper = DatabaseHelper();
+
   GameController() : super(const UiState.initial());
 
   void createGame({
@@ -67,15 +85,19 @@ class GameController extends StateNotifier<UiState<Game>> {
 
   void nextRound() {
     state.maybeWhen(
-      success: (game) {
+      success: (game) async {
         if (game.currentRound <= game.totalRounds && canMoveToNextRound(game)) {
           // Eğer son el ise ve tüm oyuncular skor girdiyse oyunu bitir
           if (game.currentRound == game.totalRounds) {
             final winner = _determineWinner(game.players);
-            state = UiState.success(game.copyWith(
+            final completedGame = game.copyWith(
               status: GameStatus.completed,
               winnerId: winner,
-            ));
+            );
+            
+            // Oyunu veritabanına kaydet
+            await _dbHelper.saveGame(completedGame);
+            state = UiState.success(completedGame);
           } else {
             // Değilse bir sonraki ele geç
             state = UiState.success(game.copyWith(
@@ -178,5 +200,9 @@ class GameController extends StateNotifier<UiState<Game>> {
       },
       orElse: () {},
     );
+  }
+
+  Future<void> deleteGame(String gameId) async {
+    await _dbHelper.deleteGame(gameId);
   }
 } 

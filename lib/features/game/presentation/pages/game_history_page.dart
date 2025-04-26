@@ -1,0 +1,135 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:adisyonapp/features/game/domain/entities/game.dart';
+import 'package:adisyonapp/features/game/presentation/controllers/game_controller.dart';
+import 'package:adisyonapp/shared/widgets/base_screen.dart';
+import 'package:intl/intl.dart';
+
+class GameHistoryPage extends ConsumerWidget {
+  const GameHistoryPage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final gamesAsync = ref.watch(gameHistoryProvider);
+
+    return BaseScreen(
+      title: 'Oyun Geçmişi',
+      body: gamesAsync.when(
+        data: (games) {
+          if (games.isEmpty) {
+            return const Center(
+              child: Text('Henüz kaydedilmiş oyun bulunmuyor.'),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: games.length,
+            itemBuilder: (context, index) {
+              final game = games[index];
+              final winner = game.players.firstWhere(
+                (p) => p.id == game.winnerId,
+                orElse: () => game.players.first,
+              );
+
+              return Card(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  game.name,
+                                  style: Theme.of(context).textTheme.titleLarge,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  game.mode == GameMode.individual
+                                      ? 'Bireysel Oyun'
+                                      : 'Takım Oyunu',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () => _showDeleteConfirmation(
+                              context,
+                              ref,
+                              game,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Divider(),
+                      Text(
+                        'Kazanan: ${winner.name}',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text('Toplam Skor: ${winner.totalScore}'),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Tüm Oyuncular:',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: 8),
+                      ...game.players.map((player) => Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text(
+                              '${player.name}: ${player.totalScore}',
+                            ),
+                          )),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => Center(child: Text('Hata: $error')),
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(
+    BuildContext context,
+    WidgetRef ref,
+    Game game,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Oyunu Sil'),
+        content: Text('${game.name} oyununu silmek istediğinize emin misiniz?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('İptal'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await ref.read(gameControllerProvider.notifier).deleteGame(game.id);
+              ref.refresh(gameHistoryProvider);
+              if (context.mounted) {
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Sil'),
+          ),
+        ],
+      ),
+    );
+  }
+} 

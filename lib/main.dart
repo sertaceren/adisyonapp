@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:adisyonapp/core/config/app_config.dart';
 import 'package:adisyonapp/core/config/injection.dart';
 import 'package:adisyonapp/core/theme/app_theme.dart';
-import 'package:adisyonapp/features/game/presentation/pages/game_setup_page.dart';
+import 'package:adisyonapp/features/game/presentation/pages/home_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,7 +35,7 @@ class AdisyonApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
-      home: const GameSetupPage(),
+      home: const HomePage(),
     );
   }
 }
