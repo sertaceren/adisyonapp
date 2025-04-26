@@ -46,6 +46,7 @@ class HomePage extends ConsumerWidget {
                                 mode: ongoingGame.mode,
                                 playerNames: ongoingGame.players.map((p) => p.name).toList(),
                                 totalRounds: ongoingGame.totalRounds,
+                                existingGame: ongoingGame,
                               );
                               Navigator.push(
                                 context,

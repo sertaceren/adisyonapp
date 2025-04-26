@@ -35,7 +35,14 @@ class GameController extends StateNotifier<UiState<Game>> {
     required GameMode mode,
     required List<String> playerNames,
     int? totalRounds,
+    Game? existingGame, // Mevcut oyunu devam ettirmek için
   }) {
+    if (existingGame != null) {
+      // Mevcut oyunu devam ettir
+      state = UiState.success(existingGame);
+      return;
+    }
+
     final players = playerNames
         .map((name) => Player(
               id: const Uuid().v4(),
@@ -52,6 +59,7 @@ class GameController extends StateNotifier<UiState<Game>> {
     );
 
     state = UiState.success(game);
+    _saveGame(game);
   }
 
   void addScore(String playerId, int score) {
@@ -78,6 +86,7 @@ class GameController extends StateNotifier<UiState<Game>> {
         );
 
         state = UiState.success(updatedGame);
+        _saveGame(updatedGame); // Skor eklendiğinde kaydet
       },
       orElse: () {},
     );
@@ -87,7 +96,6 @@ class GameController extends StateNotifier<UiState<Game>> {
     state.maybeWhen(
       success: (game) async {
         if (game.currentRound <= game.totalRounds && canMoveToNextRound(game)) {
-          // Eğer son el ise ve tüm oyuncular skor girdiyse oyunu bitir
           if (game.currentRound == game.totalRounds) {
             final winner = _determineWinner(game.players);
             final completedGame = game.copyWith(
@@ -95,14 +103,14 @@ class GameController extends StateNotifier<UiState<Game>> {
               winnerId: winner,
             );
             
-            // Oyunu veritabanına kaydet
-            await _dbHelper.saveGame(completedGame);
+            await _saveGame(completedGame); // Oyun bittiğinde kaydet
             state = UiState.success(completedGame);
           } else {
-            // Değilse bir sonraki ele geç
-            state = UiState.success(game.copyWith(
+            final nextRoundGame = game.copyWith(
               currentRound: game.currentRound + 1,
-            ));
+            );
+            await _saveGame(nextRoundGame); // Yeni ele geçildiğinde kaydet
+            state = UiState.success(nextRoundGame);
           }
         }
       },
@@ -111,7 +119,6 @@ class GameController extends StateNotifier<UiState<Game>> {
   }
 
   bool canMoveToNextRound(Game game) {
-    // Tüm oyuncuların mevcut el için skoru var mı kontrol et
     return game.players.every((player) => 
       player.roundScores.length == game.currentRound);
   }
@@ -132,7 +139,6 @@ class GameController extends StateNotifier<UiState<Game>> {
     state.maybeWhen(
       success: (game) {
         if (game.status == GameStatus.completed) {
-          // Oyun bitmişse, oyunu devam eden duruma getir
           final updatedPlayers = game.players.map((player) {
             if (player.id == playerId && player.roundScores.isNotEmpty) {
               final newRoundScores = [...player.roundScores]..removeLast();
@@ -153,9 +159,9 @@ class GameController extends StateNotifier<UiState<Game>> {
             winnerId: null,
           );
 
+          _saveGame(updatedGame); // Son skoru geri alındığında kaydet
           state = UiState.success(updatedGame);
         } else {
-          // Oyun devam ediyorsa, sadece son skoru sil
           final updatedPlayers = game.players.map((player) {
             if (player.id == playerId && player.roundScores.isNotEmpty) {
               final newRoundScores = [...player.roundScores]..removeLast();
@@ -170,9 +176,12 @@ class GameController extends StateNotifier<UiState<Game>> {
             return player;
           }).toList();
 
-          state = UiState.success(game.copyWith(
+          final updatedGame = game.copyWith(
             players: updatedPlayers,
-          ));
+          );
+
+          _saveGame(updatedGame); // Son skoru geri alındığında kaydet
+          state = UiState.success(updatedGame);
         }
       },
       orElse: () {},
@@ -196,6 +205,7 @@ class GameController extends StateNotifier<UiState<Game>> {
           winnerId: null,
         );
 
+        _saveGame(updatedGame); // Oyun sıfırlandığında kaydet
         state = UiState.success(updatedGame);
       },
       orElse: () {},
@@ -204,5 +214,9 @@ class GameController extends StateNotifier<UiState<Game>> {
 
   Future<void> deleteGame(String gameId) async {
     await _dbHelper.deleteGame(gameId);
+  }
+
+  Future<void> _saveGame(Game game) async {
+    await _dbHelper.saveGame(game);
   }
 } 

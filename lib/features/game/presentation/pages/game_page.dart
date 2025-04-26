@@ -8,6 +8,7 @@ import 'package:adisyonapp/shared/widgets/app_button.dart';
 import 'package:adisyonapp/shared/widgets/base_screen.dart';
 import 'package:adisyonapp/shared/widgets/app_text_field.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:adisyonapp/features/home/presentation/pages/home_page.dart';
 
 class GamePage extends ConsumerWidget {
   const GamePage({super.key});
@@ -26,10 +27,14 @@ class GamePage extends ConsumerWidget {
           actions: [
             IconButton(
               onPressed: () {
-                _showNewGameConfirmation(context);
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => const HomePage(),
+                  ),
+                );
               },
               icon: const Icon(Icons.home),
-              tooltip: 'Yeni Oyun',
+              tooltip: 'Anasayfa',
             ),
             IconButton(
               onPressed: () => _showResetConfirmation(context, ref),
