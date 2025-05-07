@@ -120,7 +120,10 @@ class DatabaseHelper {
 
   Future<List<Game>> getAllGames() async {
     final db = await database;
-    final List<Map<String, dynamic>> gameMaps = await db.query('games');
+    final List<Map<String, dynamic>> gameMaps = await db.query(
+      'games',
+      orderBy: 'createdAt DESC',
+    );
     
     return Future.wait(gameMaps.map((gameMap) async {
       final List<Map<String, dynamic>> playerMaps = await db.query(
