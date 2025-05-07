@@ -18,6 +18,7 @@ class HomePage extends ConsumerWidget {
 
     return BaseScreen(
       title: '101 Skor Takibi',
+      automaticallyImplyLeading: false,
       body: SingleChildScrollView(
         child: Center(
           child: Padding(
