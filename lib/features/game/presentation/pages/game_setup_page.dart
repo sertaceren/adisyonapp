@@ -85,8 +85,18 @@ class _GameSetupPageState extends ConsumerState<GameSetupPage> {
     });
   }
 
-  void _startGame() {
+  Future<void> _startGame() async {
     if (_formKey.currentState!.validate()) {
+      // Önce devam eden oyunu kontrol et ve tamamlandı olarak işaretle
+      final ongoingGame = await ref.read(ongoingGameProvider.future);
+      if (ongoingGame != null) {
+        final completedGame = ongoingGame.copyWith(
+          status: GameStatus.completed,
+          winnerId: ref.read(gameControllerProvider.notifier).determineWinner(ongoingGame.players),
+        );
+        await ref.read(gameControllerProvider.notifier).saveGame(completedGame);
+      }
+
       final names = _selectedMode == GameMode.individual
           ? _playerControllers
               .map((controller) => controller.text.trim())
@@ -104,11 +114,13 @@ class _GameSetupPageState extends ConsumerState<GameSetupPage> {
             totalRounds: int.tryParse(_totalRoundsController.text) ?? 10,
           );
 
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => const GamePage(),
-        ),
-      );
+      if (context.mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const GamePage(),
+          ),
+        );
+      }
     }
   }
 
