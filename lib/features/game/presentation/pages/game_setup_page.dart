@@ -59,32 +59,6 @@ class _GameSetupPageState extends ConsumerState<GameSetupPage> {
     super.dispose();
   }
 
-  void _addPlayer() {
-    setState(() {
-      if (_selectedMode == GameMode.individual) {
-        _playerControllers.add(TextEditingController());
-      } else {
-        _teamControllers.add(TextEditingController(text: 'Takım ${_teamControllers.length + 1}'));
-      }
-    });
-  }
-
-  void _removePlayer(int index) {
-    setState(() {
-      if (_selectedMode == GameMode.individual) {
-        if (_playerControllers.length > 2) {
-          _playerControllers[index].dispose();
-          _playerControllers.removeAt(index);
-        }
-      } else {
-        if (_teamControllers.length > 2) {
-          _teamControllers[index].dispose();
-          _teamControllers.removeAt(index);
-        }
-      }
-    });
-  }
-
   Future<void> _startGame() async {
     if (_formKey.currentState!.validate()) {
       // Önce devam eden oyunu kontrol et ve tamamlandı olarak işaretle
@@ -246,49 +220,25 @@ class _GameSetupPageState extends ConsumerState<GameSetupPage> {
                       final controller = entry.value;
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: AppTextField(
-                                controller: controller,
-                                label: _selectedMode == GameMode.individual
-                                    ? '${index + 1}. Oyuncu'
-                                    : '${index + 1}. Takım',
-                                hint: _selectedMode == GameMode.individual
-                                    ? 'Oyuncu adı'
-                                    : 'Takım adı',
-                                validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return _selectedMode == GameMode.individual
-                                        ? 'Oyuncu adı gerekli'
-                                        : 'Takım adı gerekli';
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            if ((_selectedMode == GameMode.individual && _playerControllers.length > 2) ||
-                                (_selectedMode == GameMode.team && _teamControllers.length > 2))
-                              IconButton(
-                                onPressed: () => _removePlayer(index),
-                                icon: const Icon(Icons.remove_circle),
-                                color: Theme.of(context).colorScheme.error,
-                              ),
-                          ],
+                        child: AppTextField(
+                          controller: controller,
+                          label: _selectedMode == GameMode.individual
+                              ? '${index + 1}. Oyuncu'
+                              : '${index + 1}. Takım',
+                          hint: _selectedMode == GameMode.individual
+                              ? 'Oyuncu adı'
+                              : 'Takım adı',
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return _selectedMode == GameMode.individual
+                                  ? 'Oyuncu adı gerekli'
+                                  : 'Takım adı gerekli';
+                            }
+                            return null;
+                          },
                         ),
                       );
                     }).toList(),
-                    const SizedBox(height: 8),
-                    Center(
-                      child: TextButton.icon(
-                        onPressed: _addPlayer,
-                        icon: const Icon(Icons.add),
-                        label: Text(_selectedMode == GameMode.individual
-                            ? 'Oyuncu Ekle'
-                            : 'Takım Ekle'),
-                      ),
-                    ),
                   ],
                 ),
               ),
