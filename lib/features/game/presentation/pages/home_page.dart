@@ -13,6 +13,7 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.invalidate(ongoingGameProvider);
     final ongoingGameAsync = ref.watch(ongoingGameProvider);
 
     return BaseScreen(

@@ -530,6 +530,7 @@ ${game.players.map((p) => '${p.name}: ${p.totalScore}').join('\n')}
                       winnerId: winner,
                     );
                     await ref.read(gameControllerProvider.notifier).saveGame(completedGame);
+                    ref.invalidate(gameHistoryProvider);
                   }
                 },
                 orElse: () {},

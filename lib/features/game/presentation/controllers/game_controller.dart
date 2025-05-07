@@ -7,7 +7,7 @@ import 'package:adisyonapp/core/database/database_helper.dart';
 
 final gameControllerProvider =
     StateNotifierProvider<GameController, UiState<Game>>((ref) {
-  return GameController();
+  return GameController(ref);
 });
 
 final gameHistoryProvider = FutureProvider<List<Game>>((ref) async {
@@ -31,8 +31,9 @@ final showScoresProvider = StateNotifierProvider<ShowScoresNotifier, bool>((ref)
 
 class GameController extends StateNotifier<UiState<Game>> {
   final _dbHelper = DatabaseHelper();
+  final Ref ref;
 
-  GameController() : super(const UiState.initial());
+  GameController(this.ref) : super(const UiState.initial());
 
   void createGame({
     required String name,
@@ -222,6 +223,9 @@ class GameController extends StateNotifier<UiState<Game>> {
 
   Future<void> saveGame(Game game) async {
     await _dbHelper.saveGame(game);
+    if (game.status == GameStatus.completed) {
+      ref.invalidate(gameHistoryProvider);
+    }
   }
 }
 
