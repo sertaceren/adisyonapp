@@ -55,11 +55,11 @@ class GameController extends StateNotifier<UiState<Game>> {
       name: name,
       mode: mode,
       players: players,
-      totalRounds: totalRounds ?? 10,
+      totalRounds: totalRounds ?? 11,
     );
 
     state = UiState.success(game);
-    _saveGame(game);
+    saveGame(game);
   }
 
   void addScore(String playerId, int score) {
@@ -86,7 +86,7 @@ class GameController extends StateNotifier<UiState<Game>> {
         );
 
         state = UiState.success(updatedGame);
-        _saveGame(updatedGame); // Skor eklendiğinde kaydet
+        saveGame(updatedGame); // Skor eklendiğinde kaydet
       },
       orElse: () {},
     );
@@ -97,19 +97,19 @@ class GameController extends StateNotifier<UiState<Game>> {
       success: (game) async {
         if (game.currentRound <= game.totalRounds && canMoveToNextRound(game)) {
           if (game.currentRound == game.totalRounds) {
-            final winner = _determineWinner(game.players);
+            final winner = determineWinner(game.players);
             final completedGame = game.copyWith(
               status: GameStatus.completed,
               winnerId: winner,
             );
             
-            await _saveGame(completedGame); // Oyun bittiğinde kaydet
+            await saveGame(completedGame); // Oyun bittiğinde kaydet
             state = UiState.success(completedGame);
           } else {
             final nextRoundGame = game.copyWith(
               currentRound: game.currentRound + 1,
             );
-            await _saveGame(nextRoundGame); // Yeni ele geçildiğinde kaydet
+            await saveGame(nextRoundGame); // Yeni ele geçildiğinde kaydet
             state = UiState.success(nextRoundGame);
           }
         }
@@ -123,7 +123,7 @@ class GameController extends StateNotifier<UiState<Game>> {
       player.roundScores.length == game.currentRound);
   }
 
-  String _determineWinner(List<Player> players) {
+  String determineWinner(List<Player> players) {
     if (players.isEmpty) return '';
     
     Player winner = players.first;
@@ -159,7 +159,7 @@ class GameController extends StateNotifier<UiState<Game>> {
             winnerId: null,
           );
 
-          _saveGame(updatedGame); // Son skoru geri alındığında kaydet
+          saveGame(updatedGame); // Son skoru geri alındığında kaydet
           state = UiState.success(updatedGame);
         } else {
           final updatedPlayers = game.players.map((player) {
@@ -180,7 +180,7 @@ class GameController extends StateNotifier<UiState<Game>> {
             players: updatedPlayers,
           );
 
-          _saveGame(updatedGame); // Son skoru geri alındığında kaydet
+          saveGame(updatedGame); // Son skoru geri alındığında kaydet
           state = UiState.success(updatedGame);
         }
       },
@@ -205,7 +205,7 @@ class GameController extends StateNotifier<UiState<Game>> {
           winnerId: null,
         );
 
-        _saveGame(updatedGame); // Oyun sıfırlandığında kaydet
+        saveGame(updatedGame); // Oyun sıfırlandığında kaydet
         state = UiState.success(updatedGame);
       },
       orElse: () {},
@@ -216,7 +216,7 @@ class GameController extends StateNotifier<UiState<Game>> {
     await _dbHelper.deleteGame(gameId);
   }
 
-  Future<void> _saveGame(Game game) async {
+  Future<void> saveGame(Game game) async {
     await _dbHelper.saveGame(game);
   }
 } 

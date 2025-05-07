@@ -8,7 +8,7 @@ import 'package:adisyonapp/shared/widgets/app_button.dart';
 import 'package:adisyonapp/shared/widgets/base_screen.dart';
 import 'package:adisyonapp/shared/widgets/app_text_field.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:adisyonapp/features/home/presentation/pages/home_page.dart';
+import 'package:adisyonapp/features/game/presentation/pages/home_page.dart';
 
 class GamePage extends ConsumerWidget {
   const GamePage({super.key});
@@ -243,7 +243,7 @@ class GamePage extends ConsumerWidget {
               ),
             const SizedBox(height: 24),
             AppButton(
-              text: 'Instagram\'da Paylaş',
+              text: 'Paylaş',
               onPressed: () => _shareToInstagram(context, game, winner),
               variant: AppButtonVariant.secondary,
               icon: Icons.share,
@@ -415,19 +415,8 @@ ${game.players.map((p) => '${p.name}: ${p.totalScore}').join('\n')}
                     ref,
                     player,
                     -101,
-                    '101',
+                    '-101',
                     Colors.red,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildQuickScoreButton(
-                    context,
-                    ref,
-                    player,
-                    101,
-                    '101',
-                    Colors.green,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -504,7 +493,7 @@ ${game.players.map((p) => '${p.name}: ${p.totalScore}').join('\n')}
     );
   }
 
-  void _showNewGameConfirmation(BuildContext context) {
+  void _showNewGameConfirmation(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -516,13 +505,29 @@ ${game.players.map((p) => '${p.name}: ${p.totalScore}').join('\n')}
             child: const Text('İptal'),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => const GameSetupPage(),
-                ),
+            onPressed: () async {
+              final gameState = ref.read(gameControllerProvider);
+              gameState.maybeWhen(
+                success: (game) async {
+                  if (game.status == GameStatus.inProgress) {
+                    final winner = ref.read(gameControllerProvider.notifier).determineWinner(game.players);
+                    final completedGame = game.copyWith(
+                      status: GameStatus.completed,
+                      winnerId: winner,
+                    );
+                    await ref.read(gameControllerProvider.notifier).saveGame(completedGame);
+                  }
+                },
+                orElse: () {},
               );
+              if (context.mounted) {
+                Navigator.pop(context);
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => const GameSetupPage(),
+                  ),
+                );
+              }
             },
             child: const Text('Yeni Oyun'),
           ),

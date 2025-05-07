@@ -1,0 +1,2 @@
+/Users/tugcedemiroz/adisyonapp/android/app/.cxx/Debug/62g1z03g/x86/CMakeFiles/edit_cache.dir
+/Users/tugcedemiroz/adisyonapp/android/app/.cxx/Debug/62g1z03g/x86/CMakeFiles/rebuild_cache.dir

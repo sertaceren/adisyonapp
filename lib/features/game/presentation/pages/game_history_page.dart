@@ -98,7 +98,19 @@ class GameHistoryPage extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Hata: $error')),
+        error: (error, stack) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Hata: $error'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => ref.refresh(gameHistoryProvider),
+                child: const Text('Tekrar Dene'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -120,10 +132,22 @@ class GameHistoryPage extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () async {
-              await ref.read(gameControllerProvider.notifier).deleteGame(game.id);
-              ref.refresh(gameHistoryProvider);
-              if (context.mounted) {
-                Navigator.pop(context);
+              try {
+                await ref.read(gameControllerProvider.notifier).deleteGame(game.id);
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ref.invalidate(gameHistoryProvider);
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Oyun silinirken bir hata oluştu: $e'),
+                      backgroundColor: Theme.of(context).colorScheme.error,
+                    ),
+                  );
+                }
               }
             },
             child: const Text('Sil'),

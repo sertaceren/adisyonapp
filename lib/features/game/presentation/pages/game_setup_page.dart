@@ -18,7 +18,7 @@ class GameSetupPage extends ConsumerStatefulWidget {
 class _GameSetupPageState extends ConsumerState<GameSetupPage> {
   final _formKey = GlobalKey<FormState>();
   final _gameNameController = TextEditingController();
-  final _totalRoundsController = TextEditingController(text: '10');
+  final _totalRoundsController = TextEditingController(text: '11');
   final _playerControllers = <TextEditingController>[];
   final _teamControllers = <TextEditingController>[];
   GameMode _selectedMode = GameMode.individual;
