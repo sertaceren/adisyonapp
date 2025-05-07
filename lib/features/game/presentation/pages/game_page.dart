@@ -270,15 +270,13 @@ class GamePage extends ConsumerWidget {
 
   void _shareToInstagram(BuildContext context, Game game, Player winner) {
     final message = '''
-🎮 101 Skor Takibi
+🎮 ${game.name}
 
 🏆 ${winner.name} Kazandı!
 📊 Toplam Skor: ${winner.totalScore}
 🎯 ${game.totalRounds} El Oynandı
 
 ${game.players.map((p) => '${p.name}: ${p.totalScore}').join('\n')}
-
-#101OyunuSkorTakibi #KartOyunu
 ''';
 
     Share.share(message, subject: '101 Oyunu Sonucu');
