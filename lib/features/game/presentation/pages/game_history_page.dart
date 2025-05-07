@@ -56,6 +56,13 @@ class GameHistoryPage extends ConsumerWidget {
                                       : 'Takım Oyunu',
                                   style: Theme.of(context).textTheme.bodyMedium,
                                 ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  game.createdAt.isNotEmpty 
+                                      ? DateFormat('dd.MM.yyyy HH:mm').format(DateTime.parse(game.createdAt).toLocal())
+                                      : 'Tarih bilgisi yok',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
                               ],
                             ),
                           ),

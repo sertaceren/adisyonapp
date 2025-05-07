@@ -61,6 +61,7 @@ class GameController extends StateNotifier<UiState<Game>> {
       mode: mode,
       players: players,
       totalRounds: totalRounds ?? 11,
+      createdAt: DateTime.now().toIso8601String(),
     );
 
     state = UiState.success(game);

@@ -163,6 +163,7 @@ class DatabaseHelper {
         ),
         winnerId: gameMap['winnerId'],
         players: players,
+        createdAt: gameMap['createdAt'] as String? ?? DateTime.now().toIso8601String(),
       );
     }));
   }
