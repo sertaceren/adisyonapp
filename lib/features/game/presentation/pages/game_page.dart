@@ -16,6 +16,7 @@ class GamePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final gameState = ref.watch(gameControllerProvider);
+    final showScores = ref.watch(showScoresProvider);
 
     return gameState.when(
       initial: () => const SizedBox(),
@@ -67,7 +68,7 @@ class GamePage extends ConsumerWidget {
                 child: ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    _buildScoreBoard(context, game),
+                    _buildScoreBoard(context, ref, game, showScores),
                     if (game.status == GameStatus.completed)
                       _buildWinnerCard(context, game)
                     else if (game.currentRound <= game.totalRounds)
@@ -105,7 +106,7 @@ class GamePage extends ConsumerWidget {
     );
   }
 
-  Widget _buildScoreBoard(BuildContext context, Game game) {
+  Widget _buildScoreBoard(BuildContext context, WidgetRef ref, Game game, bool showScores) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -123,6 +124,19 @@ class GamePage extends ConsumerWidget {
                     fontWeight: FontWeight.w600,
                     color: Theme.of(context).colorScheme.primary,
                   ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: () {
+                    ref.read(showScoresProvider.notifier).toggle();
+                  },
+                  icon: Icon(
+                    showScores ? Icons.visibility : Icons.visibility_off,
+                    size: 20,
+                  ),
+                  tooltip: showScores ? 'Puanları Gizle' : 'Puanları Göster',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
               ],
             ),
@@ -172,7 +186,7 @@ class GamePage extends ConsumerWidget {
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         child: Text(
-                          player.totalScore.toString(),
+                          showScores ? player.totalScore.toString() : '***',
                           style: TextStyle(
                             fontSize: 16,
                             color: Theme.of(context).colorScheme.secondary,

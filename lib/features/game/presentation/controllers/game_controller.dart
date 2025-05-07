@@ -25,6 +25,10 @@ final ongoingGameProvider = FutureProvider<Game?>((ref) async {
   }
 });
 
+final showScoresProvider = StateNotifierProvider<ShowScoresNotifier, bool>((ref) {
+  return ShowScoresNotifier();
+});
+
 class GameController extends StateNotifier<UiState<Game>> {
   final _dbHelper = DatabaseHelper();
 
@@ -218,5 +222,13 @@ class GameController extends StateNotifier<UiState<Game>> {
 
   Future<void> saveGame(Game game) async {
     await _dbHelper.saveGame(game);
+  }
+}
+
+class ShowScoresNotifier extends StateNotifier<bool> {
+  ShowScoresNotifier() : super(false);
+
+  void toggle() {
+    state = !state;
   }
 } 
