@@ -29,6 +29,7 @@ mixin _$Game {
   int get totalRounds => throw _privateConstructorUsedError;
   String? get winnerId => throw _privateConstructorUsedError;
   String get createdAt => throw _privateConstructorUsedError;
+  int get currentDealerIndex => throw _privateConstructorUsedError;
 
   /// Serializes this Game to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -53,7 +54,8 @@ abstract class $GameCopyWith<$Res> {
       int currentRound,
       int totalRounds,
       String? winnerId,
-      String createdAt});
+      String createdAt,
+      int currentDealerIndex});
 }
 
 /// @nodoc
@@ -80,6 +82,7 @@ class _$GameCopyWithImpl<$Res, $Val extends Game>
     Object? totalRounds = null,
     Object? winnerId = freezed,
     Object? createdAt = null,
+    Object? currentDealerIndex = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -118,6 +121,10 @@ class _$GameCopyWithImpl<$Res, $Val extends Game>
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as String,
+      currentDealerIndex: null == currentDealerIndex
+          ? _value.currentDealerIndex
+          : currentDealerIndex // ignore: cast_nullable_to_non_nullable
+              as int,
     ) as $Val);
   }
 }
@@ -138,7 +145,8 @@ abstract class _$$GameImplCopyWith<$Res> implements $GameCopyWith<$Res> {
       int currentRound,
       int totalRounds,
       String? winnerId,
-      String createdAt});
+      String createdAt,
+      int currentDealerIndex});
 }
 
 /// @nodoc
@@ -162,6 +170,7 @@ class __$$GameImplCopyWithImpl<$Res>
     Object? totalRounds = null,
     Object? winnerId = freezed,
     Object? createdAt = null,
+    Object? currentDealerIndex = null,
   }) {
     return _then(_$GameImpl(
       id: null == id
@@ -200,6 +209,10 @@ class __$$GameImplCopyWithImpl<$Res>
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as String,
+      currentDealerIndex: null == currentDealerIndex
+          ? _value.currentDealerIndex
+          : currentDealerIndex // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
@@ -216,7 +229,8 @@ class _$GameImpl implements _Game {
       this.currentRound = 1,
       this.totalRounds = 10,
       this.winnerId,
-      this.createdAt = ''})
+      this.createdAt = '',
+      this.currentDealerIndex = 0})
       : _players = players;
 
   factory _$GameImpl.fromJson(Map<String, dynamic> json) =>
@@ -250,10 +264,13 @@ class _$GameImpl implements _Game {
   @override
   @JsonKey()
   final String createdAt;
+  @override
+  @JsonKey()
+  final int currentDealerIndex;
 
   @override
   String toString() {
-    return 'Game(id: $id, name: $name, mode: $mode, status: $status, players: $players, currentRound: $currentRound, totalRounds: $totalRounds, winnerId: $winnerId, createdAt: $createdAt)';
+    return 'Game(id: $id, name: $name, mode: $mode, status: $status, players: $players, currentRound: $currentRound, totalRounds: $totalRounds, winnerId: $winnerId, createdAt: $createdAt, currentDealerIndex: $currentDealerIndex)';
   }
 
   @override
@@ -273,7 +290,9 @@ class _$GameImpl implements _Game {
             (identical(other.winnerId, winnerId) ||
                 other.winnerId == winnerId) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            (identical(other.currentDealerIndex, currentDealerIndex) ||
+                other.currentDealerIndex == currentDealerIndex));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -288,7 +307,8 @@ class _$GameImpl implements _Game {
       currentRound,
       totalRounds,
       winnerId,
-      createdAt);
+      createdAt,
+      currentDealerIndex);
 
   /// Create a copy of Game
   /// with the given fields replaced by the non-null parameter values.
@@ -316,7 +336,8 @@ abstract class _Game implements Game {
       final int currentRound,
       final int totalRounds,
       final String? winnerId,
-      final String createdAt}) = _$GameImpl;
+      final String createdAt,
+      final int currentDealerIndex}) = _$GameImpl;
 
   factory _Game.fromJson(Map<String, dynamic> json) = _$GameImpl.fromJson;
 
@@ -338,6 +359,8 @@ abstract class _Game implements Game {
   String? get winnerId;
   @override
   String get createdAt;
+  @override
+  int get currentDealerIndex;
 
   /// Create a copy of Game
   /// with the given fields replaced by the non-null parameter values.

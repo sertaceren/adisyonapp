@@ -21,8 +21,9 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'game_history.db');
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -37,7 +38,8 @@ class DatabaseHelper {
         currentRound INTEGER,
         status TEXT,
         winnerId TEXT,
-        createdAt TEXT
+        createdAt TEXT,
+        currentDealerIndex INTEGER DEFAULT 0
       )
     ''');
 
@@ -48,6 +50,7 @@ class DatabaseHelper {
         gameId TEXT,
         name TEXT,
         totalScore INTEGER,
+        isDealer INTEGER DEFAULT 0,
         FOREIGN KEY (gameId) REFERENCES games (id)
       )
     ''');
@@ -67,6 +70,14 @@ class DatabaseHelper {
     ''');
   }
 
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Yeni sütunları ekle
+      await db.execute('ALTER TABLE games ADD COLUMN currentDealerIndex INTEGER DEFAULT 0');
+      await db.execute('ALTER TABLE players ADD COLUMN isDealer INTEGER DEFAULT 0');
+    }
+  }
+
   Future<void> saveGame(Game game) async {
     final db = await database;
     await db.transaction((txn) async {
@@ -82,6 +93,7 @@ class DatabaseHelper {
           'status': game.status.toString(),
           'winnerId': game.winnerId,
           'createdAt': DateTime.now().toIso8601String(),
+          'currentDealerIndex': game.currentDealerIndex,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
@@ -95,6 +107,7 @@ class DatabaseHelper {
             'gameId': game.id,
             'name': player.name,
             'totalScore': player.totalScore,
+            'isDealer': player.isDealer ? 1 : 0,
           },
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
@@ -147,6 +160,7 @@ class DatabaseHelper {
           name: playerMap['name'],
           totalScore: playerMap['totalScore'],
           roundScores: roundScores,
+          isDealer: (playerMap['isDealer'] as int?) == 1,
         );
       }));
 
@@ -164,6 +178,7 @@ class DatabaseHelper {
         winnerId: gameMap['winnerId'],
         players: players,
         createdAt: gameMap['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+        currentDealerIndex: gameMap['currentDealerIndex'] as int? ?? 0,
       );
     }));
   }

@@ -24,6 +24,7 @@ mixin _$Player {
   String get name => throw _privateConstructorUsedError;
   int get totalScore => throw _privateConstructorUsedError;
   List<int> get roundScores => throw _privateConstructorUsedError;
+  bool get isDealer => throw _privateConstructorUsedError;
 
   /// Serializes this Player to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -39,7 +40,12 @@ abstract class $PlayerCopyWith<$Res> {
   factory $PlayerCopyWith(Player value, $Res Function(Player) then) =
       _$PlayerCopyWithImpl<$Res, Player>;
   @useResult
-  $Res call({String id, String name, int totalScore, List<int> roundScores});
+  $Res call(
+      {String id,
+      String name,
+      int totalScore,
+      List<int> roundScores,
+      bool isDealer});
 }
 
 /// @nodoc
@@ -61,6 +67,7 @@ class _$PlayerCopyWithImpl<$Res, $Val extends Player>
     Object? name = null,
     Object? totalScore = null,
     Object? roundScores = null,
+    Object? isDealer = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -79,6 +86,10 @@ class _$PlayerCopyWithImpl<$Res, $Val extends Player>
           ? _value.roundScores
           : roundScores // ignore: cast_nullable_to_non_nullable
               as List<int>,
+      isDealer: null == isDealer
+          ? _value.isDealer
+          : isDealer // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 }
@@ -90,7 +101,12 @@ abstract class _$$PlayerImplCopyWith<$Res> implements $PlayerCopyWith<$Res> {
       __$$PlayerImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String id, String name, int totalScore, List<int> roundScores});
+  $Res call(
+      {String id,
+      String name,
+      int totalScore,
+      List<int> roundScores,
+      bool isDealer});
 }
 
 /// @nodoc
@@ -110,6 +126,7 @@ class __$$PlayerImplCopyWithImpl<$Res>
     Object? name = null,
     Object? totalScore = null,
     Object? roundScores = null,
+    Object? isDealer = null,
   }) {
     return _then(_$PlayerImpl(
       id: null == id
@@ -128,6 +145,10 @@ class __$$PlayerImplCopyWithImpl<$Res>
           ? _value._roundScores
           : roundScores // ignore: cast_nullable_to_non_nullable
               as List<int>,
+      isDealer: null == isDealer
+          ? _value.isDealer
+          : isDealer // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -139,7 +160,8 @@ class _$PlayerImpl implements _Player {
       {required this.id,
       required this.name,
       this.totalScore = 0,
-      final List<int> roundScores = const []})
+      final List<int> roundScores = const [],
+      this.isDealer = false})
       : _roundScores = roundScores;
 
   factory _$PlayerImpl.fromJson(Map<String, dynamic> json) =>
@@ -162,8 +184,12 @@ class _$PlayerImpl implements _Player {
   }
 
   @override
+  @JsonKey()
+  final bool isDealer;
+
+  @override
   String toString() {
-    return 'Player(id: $id, name: $name, totalScore: $totalScore, roundScores: $roundScores)';
+    return 'Player(id: $id, name: $name, totalScore: $totalScore, roundScores: $roundScores, isDealer: $isDealer)';
   }
 
   @override
@@ -176,13 +202,15 @@ class _$PlayerImpl implements _Player {
             (identical(other.totalScore, totalScore) ||
                 other.totalScore == totalScore) &&
             const DeepCollectionEquality()
-                .equals(other._roundScores, _roundScores));
+                .equals(other._roundScores, _roundScores) &&
+            (identical(other.isDealer, isDealer) ||
+                other.isDealer == isDealer));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, id, name, totalScore,
-      const DeepCollectionEquality().hash(_roundScores));
+      const DeepCollectionEquality().hash(_roundScores), isDealer);
 
   /// Create a copy of Player
   /// with the given fields replaced by the non-null parameter values.
@@ -205,7 +233,8 @@ abstract class _Player implements Player {
       {required final String id,
       required final String name,
       final int totalScore,
-      final List<int> roundScores}) = _$PlayerImpl;
+      final List<int> roundScores,
+      final bool isDealer}) = _$PlayerImpl;
 
   factory _Player.fromJson(Map<String, dynamic> json) = _$PlayerImpl.fromJson;
 
@@ -217,6 +246,8 @@ abstract class _Player implements Player {
   int get totalScore;
   @override
   List<int> get roundScores;
+  @override
+  bool get isDealer;
 
   /// Create a copy of Player
   /// with the given fields replaced by the non-null parameter values.

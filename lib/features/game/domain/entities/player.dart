@@ -10,6 +10,7 @@ class Player with _$Player {
     required String name,
     @Default(0) int totalScore,
     @Default([]) List<int> roundScores,
+    @Default(false) bool isDealer,
   }) = _Player;
 
   factory Player.fromJson(Map<String, dynamic> json) => _$PlayerFromJson(json);

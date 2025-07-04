@@ -29,6 +29,10 @@ final showScoresProvider = StateNotifierProvider<ShowScoresNotifier, bool>((ref)
   return ShowScoresNotifier();
 });
 
+final sortScoresProvider = StateNotifierProvider<SortScoresNotifier, bool>((ref) {
+  return SortScoresNotifier();
+});
+
 class GameController extends StateNotifier<UiState<Game>> {
   final _dbHelper = DatabaseHelper();
   final Ref ref;
@@ -55,17 +59,28 @@ class GameController extends StateNotifier<UiState<Game>> {
             ))
         .toList();
 
+    // İlk oyuncuyu dağıtıcı olarak ayarla
+    final playersWithDealer = players.asMap().entries.map((entry) {
+      final index = entry.key;
+      final player = entry.value;
+      return player.copyWith(isDealer: index == 0);
+    }).toList();
+
     final game = Game(
       id: const Uuid().v4(),
       name: name,
       mode: mode,
-      players: players,
+      players: playersWithDealer,
       totalRounds: totalRounds ?? 11,
       createdAt: DateTime.now().toIso8601String(),
+      currentDealerIndex: 0,
     );
 
     state = UiState.success(game);
     saveGame(game);
+    
+    // Skor sıralamasını devre dışı bırak
+    ref.read(sortScoresProvider.notifier).disableSorting();
   }
 
   void addScore(String playerId, int score) {
@@ -112,11 +127,25 @@ class GameController extends StateNotifier<UiState<Game>> {
             await saveGame(completedGame); // Oyun bittiğinde kaydet
             state = UiState.success(completedGame);
           } else {
+            // Dağıtıcıyı bir sonraki oyuncuya geçir
+            final nextDealerIndex = (game.currentDealerIndex + 1) % game.players.length;
+            
+            final updatedPlayers = game.players.asMap().entries.map((entry) {
+              final index = entry.key;
+              final player = entry.value;
+              return player.copyWith(isDealer: index == nextDealerIndex);
+            }).toList();
+            
             final nextRoundGame = game.copyWith(
               currentRound: game.currentRound + 1,
+              players: updatedPlayers,
+              currentDealerIndex: nextDealerIndex,
             );
             await saveGame(nextRoundGame); // Yeni ele geçildiğinde kaydet
             state = UiState.success(nextRoundGame);
+            
+            // Skor sıralamasını etkinleştir
+            ref.read(sortScoresProvider.notifier).enableSorting();
           }
         }
       },
@@ -197,10 +226,13 @@ class GameController extends StateNotifier<UiState<Game>> {
   void resetGame() {
     state.maybeWhen(
       success: (game) {
-        final updatedPlayers = game.players.map((player) {
+        final updatedPlayers = game.players.asMap().entries.map((entry) {
+          final index = entry.key;
+          final player = entry.value;
           return player.copyWith(
             roundScores: [],
             totalScore: 0,
+            isDealer: index == 0,
           );
         }).toList();
 
@@ -209,10 +241,14 @@ class GameController extends StateNotifier<UiState<Game>> {
           currentRound: 1,
           status: GameStatus.inProgress,
           winnerId: null,
+          currentDealerIndex: 0,
         );
 
         saveGame(updatedGame); // Oyun sıfırlandığında kaydet
         state = UiState.success(updatedGame);
+        
+        // Skor sıralamasını devre dışı bırak
+        ref.read(sortScoresProvider.notifier).disableSorting();
       },
       orElse: () {},
     );
@@ -235,5 +271,17 @@ class ShowScoresNotifier extends StateNotifier<bool> {
 
   void toggle() {
     state = !state;
+  }
+}
+
+class SortScoresNotifier extends StateNotifier<bool> {
+  SortScoresNotifier() : super(false);
+
+  void enableSorting() {
+    state = true;
+  }
+
+  void disableSorting() {
+    state = false;
   }
 } 

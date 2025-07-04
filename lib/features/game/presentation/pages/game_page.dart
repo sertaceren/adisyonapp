@@ -107,6 +107,13 @@ class GamePage extends ConsumerWidget {
   }
 
   Widget _buildScoreBoard(BuildContext context, WidgetRef ref, Game game, bool showScores) {
+    final shouldSort = ref.watch(sortScoresProvider);
+    
+    // Oyuncuları puanlarına göre küçükten büyüğe sırala (sadece sıralama etkinse)
+    final displayPlayers = shouldSort 
+        ? (List.from(game.players)..sort((a, b) => a.totalScore.compareTo(b.totalScore)))
+        : game.players;
+    
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -173,14 +180,33 @@ class GamePage extends ConsumerWidget {
                     ),
                   ],
                 ),
-                ...game.players.map((player) {
+                ...displayPlayers.map((player) {
                   return TableRow(
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        child: Text(
-                          player.name,
-                          style: const TextStyle(fontSize: 16),
+                        child: Row(
+                          children: [
+                            if (player.isDealer)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  '🎯',
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                              ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                player.name,
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       Padding(

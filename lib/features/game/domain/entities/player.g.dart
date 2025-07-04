@@ -14,6 +14,7 @@ _$PlayerImpl _$$PlayerImplFromJson(Map<String, dynamic> json) => _$PlayerImpl(
               ?.map((e) => (e as num).toInt())
               .toList() ??
           const [],
+      isDealer: json['isDealer'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$$PlayerImplToJson(_$PlayerImpl instance) =>
@@ -22,4 +23,5 @@ Map<String, dynamic> _$$PlayerImplToJson(_$PlayerImpl instance) =>
       'name': instance.name,
       'totalScore': instance.totalScore,
       'roundScores': instance.roundScores,
+      'isDealer': instance.isDealer,
     };
