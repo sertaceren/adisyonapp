@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:adisyonapp/shared/widgets/base_screen.dart';
 import 'package:adisyonapp/features/settings/presentation/pages/players_page.dart';
+import 'package:adisyonapp/features/tournament/presentation/pages/tournaments_page.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -23,6 +24,21 @@ class SettingsPage extends ConsumerWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const PlayersPage(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          _buildSettingsCard(
+            context,
+            title: 'Turnuvalar',
+            icon: Icons.emoji_events,
+            description: 'Turnuvaları yönet',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TournamentsPage(),
                 ),
               );
             },

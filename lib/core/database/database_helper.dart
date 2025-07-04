@@ -2,6 +2,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:adisyonapp/features/game/domain/entities/game.dart';
 import 'package:adisyonapp/features/game/domain/entities/player.dart';
+import 'package:adisyonapp/features/tournament/domain/entities/tournament.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -21,7 +22,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'game_history.db');
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -78,6 +79,29 @@ class DatabaseHelper {
         createdAt TEXT
       )
     ''');
+
+    // Turnuva tablosu
+    await db.execute('''
+      CREATE TABLE tournaments(
+        id TEXT PRIMARY KEY,
+        name TEXT,
+        type TEXT,
+        status TEXT,
+        createdAt TEXT,
+        updatedAt TEXT
+      )
+    ''');
+
+    // Turnuva katılımcıları tablosu
+    await db.execute('''
+      CREATE TABLE tournament_participants(
+        id TEXT PRIMARY KEY,
+        tournamentId TEXT,
+        name TEXT,
+        createdAt TEXT,
+        FOREIGN KEY (tournamentId) REFERENCES tournaments (id)
+      )
+    ''');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -95,6 +119,30 @@ class DatabaseHelper {
           name TEXT,
           isActive INTEGER DEFAULT 1,
           createdAt TEXT
+        )
+      ''');
+    }
+
+    if (oldVersion < 4) {
+      // Turnuva tablolarını ekle
+      await db.execute('''
+        CREATE TABLE tournaments(
+          id TEXT PRIMARY KEY,
+          name TEXT,
+          type TEXT,
+          status TEXT,
+          createdAt TEXT,
+          updatedAt TEXT
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE tournament_participants(
+          id TEXT PRIMARY KEY,
+          tournamentId TEXT,
+          name TEXT,
+          createdAt TEXT,
+          FOREIGN KEY (tournamentId) REFERENCES tournaments (id)
         )
       ''');
     }
@@ -263,5 +311,98 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [playerId],
     );
+  }
+
+  // Turnuva metodları
+  Future<void> saveTournament(Tournament tournament) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      // Turnuvayı kaydet
+      await txn.insert(
+        'tournaments',
+        {
+          'id': tournament.id,
+          'name': tournament.name,
+          'type': tournament.type.toString(),
+          'status': tournament.status.toString(),
+          'createdAt': tournament.createdAt,
+          'updatedAt': tournament.updatedAt,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+
+      // Önce eski katılımcıları sil
+      await txn.delete(
+        'tournament_participants',
+        where: 'tournamentId = ?',
+        whereArgs: [tournament.id],
+      );
+
+      // Yeni katılımcıları kaydet
+      for (var participant in tournament.participants) {
+        await txn.insert(
+          'tournament_participants',
+          {
+            'id': '${tournament.id}_${participant.id}',
+            'tournamentId': tournament.id,
+            'name': participant.name,
+            'createdAt': participant.createdAt,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+    });
+  }
+
+  Future<List<Tournament>> getAllTournaments() async {
+    final db = await database;
+    final List<Map<String, dynamic>> tournamentMaps = await db.query(
+      'tournaments',
+      orderBy: 'createdAt DESC',
+    );
+    
+    return Future.wait(tournamentMaps.map((tournamentMap) async {
+      final List<Map<String, dynamic>> participantMaps = await db.query(
+        'tournament_participants',
+        where: 'tournamentId = ?',
+        whereArgs: [tournamentMap['id']],
+      );
+
+      final participants = participantMaps.map((participantMap) => SavedPlayer(
+        id: participantMap['id'],
+        name: participantMap['name'],
+        createdAt: participantMap['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+      )).toList();
+
+      return Tournament(
+        id: tournamentMap['id'],
+        name: tournamentMap['name'],
+        type: TournamentType.values.firstWhere(
+          (e) => e.toString() == tournamentMap['type'],
+        ),
+        status: TournamentStatus.values.firstWhere(
+          (e) => e.toString() == tournamentMap['status'],
+        ),
+        participants: participants,
+        createdAt: tournamentMap['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+        updatedAt: tournamentMap['updatedAt'] as String? ?? DateTime.now().toIso8601String(),
+      );
+    }));
+  }
+
+  Future<void> deleteTournament(String tournamentId) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      await txn.delete(
+        'tournament_participants',
+        where: 'tournamentId = ?',
+        whereArgs: [tournamentId],
+      );
+      await txn.delete(
+        'tournaments',
+        where: 'id = ?',
+        whereArgs: [tournamentId],
+      );
+    });
   }
 } 
