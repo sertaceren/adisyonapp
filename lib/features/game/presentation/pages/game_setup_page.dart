@@ -7,6 +7,7 @@ import 'package:adisyonapp/features/game/presentation/pages/game_page.dart';
 import 'package:adisyonapp/shared/widgets/app_button.dart';
 import 'package:adisyonapp/shared/widgets/app_text_field.dart';
 import 'package:adisyonapp/shared/widgets/base_screen.dart';
+import 'package:adisyonapp/features/settings/presentation/controllers/players_controller.dart';
 
 class GameSetupPage extends ConsumerStatefulWidget {
   const GameSetupPage({super.key});
@@ -100,6 +101,14 @@ class _GameSetupPageState extends ConsumerState<GameSetupPage> {
 
   @override
   Widget build(BuildContext context) {
+    final playersAsync = ref.watch(playersControllerProvider);
+    List<String> savedPlayerNames = [];
+    playersAsync.maybeWhen(
+      success: (players) {
+        savedPlayerNames = players.where((p) => p.isActive).map((p) => p.name).toList();
+      },
+      orElse: () {},
+    );
     return BaseScreen(
       title: '101 Skor Takibi',
       body: Form(
@@ -212,33 +221,71 @@ class _GameSetupPageState extends ConsumerState<GameSetupPage> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    ...(_selectedMode == GameMode.individual ? _playerControllers : _teamControllers)
-                        .asMap()
-                        .entries
-                        .map((entry) {
-                      final index = entry.key;
-                      final controller = entry.value;
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: AppTextField(
-                          controller: controller,
-                          label: _selectedMode == GameMode.individual
-                              ? '${index + 1}. Oyuncu'
-                              : '${index + 1}. Takım',
-                          hint: _selectedMode == GameMode.individual
-                              ? 'Oyuncu adı'
-                              : 'Takım adı',
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return _selectedMode == GameMode.individual
-                                  ? 'Oyuncu adı gerekli'
-                                  : 'Takım adı gerekli';
-                            }
-                            return null;
-                          },
-                        ),
-                      );
-                    }).toList(),
+                    if (_selectedMode == GameMode.individual)
+                      ..._playerControllers.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final controller = entry.value;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Autocomplete<String>(
+                            optionsBuilder: (TextEditingValue textEditingValue) {
+                              // Hiçbir şey yazılmadığında da tüm kayıtlı oyuncuları göster
+                              if (textEditingValue.text == '') {
+                                return savedPlayerNames;
+                              }
+                              return savedPlayerNames.where((String option) {
+                                return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                              });
+                            },
+                            onSelected: (String selection) {
+                              controller.text = selection;
+                            },
+                            fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
+                              // İlk açılışta controller ile senkronize et
+                              textEditingController.text = controller.text;
+                              textEditingController.selection = TextSelection.fromPosition(
+                                TextPosition(offset: textEditingController.text.length),
+                              );
+                              return TextFormField(
+                                controller: textEditingController,
+                                focusNode: focusNode,
+                                decoration: InputDecoration(
+                                  labelText: '${index + 1}. Oyuncu',
+                                  hintText: 'Oyuncu adı',
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'Oyuncu adı gerekli';
+                                  }
+                                  return null;
+                                },
+                                onChanged: (value) {
+                                  controller.text = value;
+                                },
+                              );
+                            },
+                          ),
+                        );
+                      }).toList()
+                    else
+                      ..._teamControllers.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final controller = entry.value;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: AppTextField(
+                            controller: controller,
+                            label: '${index + 1}. Takım',
+                            hint: 'Takım adı',
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Takım adı gerekli';
+                              }
+                              return null;
+                            },
+                          ),
+                        );
+                      }).toList(),
                   ],
                 ),
               ),

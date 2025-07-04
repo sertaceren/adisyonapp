@@ -6,6 +6,7 @@ import 'package:adisyonapp/features/game/presentation/pages/game_page.dart';
 import 'package:adisyonapp/features/game/presentation/controllers/game_controller.dart';
 import 'package:adisyonapp/shared/widgets/app_button.dart';
 import 'package:adisyonapp/shared/widgets/base_screen.dart';
+import 'package:adisyonapp/features/settings/presentation/pages/settings_page.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class HomePage extends ConsumerWidget {
@@ -19,6 +20,20 @@ class HomePage extends ConsumerWidget {
     return BaseScreen(
       title: '101 Skor Takibi',
       automaticallyImplyLeading: false,
+      actions: [
+        IconButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const SettingsPage(),
+              ),
+            );
+          },
+          icon: const Icon(Icons.settings),
+          tooltip: 'Ayarlar',
+        ),
+      ],
       body: SingleChildScrollView(
         child: Center(
           child: Padding(

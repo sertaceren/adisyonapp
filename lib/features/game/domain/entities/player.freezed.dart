@@ -256,3 +256,212 @@ abstract class _Player implements Player {
   _$$PlayerImplCopyWith<_$PlayerImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
+
+SavedPlayer _$SavedPlayerFromJson(Map<String, dynamic> json) {
+  return _SavedPlayer.fromJson(json);
+}
+
+/// @nodoc
+mixin _$SavedPlayer {
+  String get id => throw _privateConstructorUsedError;
+  String get name => throw _privateConstructorUsedError;
+  bool get isActive => throw _privateConstructorUsedError;
+  String get createdAt => throw _privateConstructorUsedError;
+
+  /// Serializes this SavedPlayer to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of SavedPlayer
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $SavedPlayerCopyWith<SavedPlayer> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $SavedPlayerCopyWith<$Res> {
+  factory $SavedPlayerCopyWith(
+          SavedPlayer value, $Res Function(SavedPlayer) then) =
+      _$SavedPlayerCopyWithImpl<$Res, SavedPlayer>;
+  @useResult
+  $Res call({String id, String name, bool isActive, String createdAt});
+}
+
+/// @nodoc
+class _$SavedPlayerCopyWithImpl<$Res, $Val extends SavedPlayer>
+    implements $SavedPlayerCopyWith<$Res> {
+  _$SavedPlayerCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of SavedPlayer
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? name = null,
+    Object? isActive = null,
+    Object? createdAt = null,
+  }) {
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      isActive: null == isActive
+          ? _value.isActive
+          : isActive // ignore: cast_nullable_to_non_nullable
+              as bool,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$SavedPlayerImplCopyWith<$Res>
+    implements $SavedPlayerCopyWith<$Res> {
+  factory _$$SavedPlayerImplCopyWith(
+          _$SavedPlayerImpl value, $Res Function(_$SavedPlayerImpl) then) =
+      __$$SavedPlayerImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String id, String name, bool isActive, String createdAt});
+}
+
+/// @nodoc
+class __$$SavedPlayerImplCopyWithImpl<$Res>
+    extends _$SavedPlayerCopyWithImpl<$Res, _$SavedPlayerImpl>
+    implements _$$SavedPlayerImplCopyWith<$Res> {
+  __$$SavedPlayerImplCopyWithImpl(
+      _$SavedPlayerImpl _value, $Res Function(_$SavedPlayerImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of SavedPlayer
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? name = null,
+    Object? isActive = null,
+    Object? createdAt = null,
+  }) {
+    return _then(_$SavedPlayerImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      isActive: null == isActive
+          ? _value.isActive
+          : isActive // ignore: cast_nullable_to_non_nullable
+              as bool,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$SavedPlayerImpl implements _SavedPlayer {
+  const _$SavedPlayerImpl(
+      {required this.id,
+      required this.name,
+      this.isActive = true,
+      this.createdAt = ''});
+
+  factory _$SavedPlayerImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SavedPlayerImplFromJson(json);
+
+  @override
+  final String id;
+  @override
+  final String name;
+  @override
+  @JsonKey()
+  final bool isActive;
+  @override
+  @JsonKey()
+  final String createdAt;
+
+  @override
+  String toString() {
+    return 'SavedPlayer(id: $id, name: $name, isActive: $isActive, createdAt: $createdAt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$SavedPlayerImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.isActive, isActive) ||
+                other.isActive == isActive) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, id, name, isActive, createdAt);
+
+  /// Create a copy of SavedPlayer
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$SavedPlayerImplCopyWith<_$SavedPlayerImpl> get copyWith =>
+      __$$SavedPlayerImplCopyWithImpl<_$SavedPlayerImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$SavedPlayerImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _SavedPlayer implements SavedPlayer {
+  const factory _SavedPlayer(
+      {required final String id,
+      required final String name,
+      final bool isActive,
+      final String createdAt}) = _$SavedPlayerImpl;
+
+  factory _SavedPlayer.fromJson(Map<String, dynamic> json) =
+      _$SavedPlayerImpl.fromJson;
+
+  @override
+  String get id;
+  @override
+  String get name;
+  @override
+  bool get isActive;
+  @override
+  String get createdAt;
+
+  /// Create a copy of SavedPlayer
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$SavedPlayerImplCopyWith<_$SavedPlayerImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}

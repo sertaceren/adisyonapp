@@ -21,7 +21,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'game_history.db');
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -68,6 +68,16 @@ class DatabaseHelper {
         FOREIGN KEY (gameId) REFERENCES games (id)
       )
     ''');
+
+    // Kayıtlı oyuncular tablosu
+    await db.execute('''
+      CREATE TABLE saved_players(
+        id TEXT PRIMARY KEY,
+        name TEXT,
+        isActive INTEGER DEFAULT 1,
+        createdAt TEXT
+      )
+    ''');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -75,6 +85,18 @@ class DatabaseHelper {
       // Yeni sütunları ekle
       await db.execute('ALTER TABLE games ADD COLUMN currentDealerIndex INTEGER DEFAULT 0');
       await db.execute('ALTER TABLE players ADD COLUMN isDealer INTEGER DEFAULT 0');
+    }
+    
+    if (oldVersion < 3) {
+      // Kayıtlı oyuncular tablosunu ekle
+      await db.execute('''
+        CREATE TABLE saved_players(
+          id TEXT PRIMARY KEY,
+          name TEXT,
+          isActive INTEGER DEFAULT 1,
+          createdAt TEXT
+        )
+      ''');
     }
   }
 
@@ -202,5 +224,44 @@ class DatabaseHelper {
         whereArgs: [gameId],
       );
     });
+  }
+
+  // Kayıtlı oyuncular için metodlar
+  Future<void> saveSavedPlayer(SavedPlayer player) async {
+    final db = await database;
+    await db.insert(
+      'saved_players',
+      {
+        'id': player.id,
+        'name': player.name,
+        'isActive': player.isActive ? 1 : 0,
+        'createdAt': player.createdAt,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<List<SavedPlayer>> getAllSavedPlayers() async {
+    final db = await database;
+    final List<Map<String, dynamic>> playerMaps = await db.query(
+      'saved_players',
+      orderBy: 'name ASC',
+    );
+
+    return playerMaps.map((playerMap) => SavedPlayer(
+      id: playerMap['id'],
+      name: playerMap['name'],
+      isActive: (playerMap['isActive'] as int?) == 1,
+      createdAt: playerMap['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+    )).toList();
+  }
+
+  Future<void> deleteSavedPlayer(String playerId) async {
+    final db = await database;
+    await db.delete(
+      'saved_players',
+      where: 'id = ?',
+      whereArgs: [playerId],
+    );
   }
 } 

@@ -25,3 +25,19 @@ Map<String, dynamic> _$$PlayerImplToJson(_$PlayerImpl instance) =>
       'roundScores': instance.roundScores,
       'isDealer': instance.isDealer,
     };
+
+_$SavedPlayerImpl _$$SavedPlayerImplFromJson(Map<String, dynamic> json) =>
+    _$SavedPlayerImpl(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      isActive: json['isActive'] as bool? ?? true,
+      createdAt: json['createdAt'] as String? ?? '',
+    );
+
+Map<String, dynamic> _$$SavedPlayerImplToJson(_$SavedPlayerImpl instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'name': instance.name,
+      'isActive': instance.isActive,
+      'createdAt': instance.createdAt,
+    };

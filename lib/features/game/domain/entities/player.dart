@@ -14,4 +14,16 @@ class Player with _$Player {
   }) = _Player;
 
   factory Player.fromJson(Map<String, dynamic> json) => _$PlayerFromJson(json);
+}
+
+@freezed
+class SavedPlayer with _$SavedPlayer {
+  const factory SavedPlayer({
+    required String id,
+    required String name,
+    @Default(true) bool isActive,
+    @Default('') String createdAt,
+  }) = _SavedPlayer;
+
+  factory SavedPlayer.fromJson(Map<String, dynamic> json) => _$SavedPlayerFromJson(json);
 } 
