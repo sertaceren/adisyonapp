@@ -4,6 +4,7 @@ import 'package:adisyonapp/features/game/presentation/pages/game_setup_page.dart
 import 'package:adisyonapp/features/game/presentation/pages/game_history_page.dart';
 import 'package:adisyonapp/features/game/presentation/pages/game_page.dart';
 import 'package:adisyonapp/features/game/presentation/controllers/game_controller.dart';
+import 'package:adisyonapp/features/game/domain/entities/game.dart';
 import 'package:adisyonapp/shared/widgets/app_button.dart';
 import 'package:adisyonapp/shared/widgets/base_screen.dart';
 import 'package:adisyonapp/features/settings/presentation/pages/settings_page.dart';
@@ -26,6 +27,17 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      // Turnuva sekmesine geçildiğinde provider'ları yenile
+      if (_tabController.index == 1 && _selectedTournament != null) {
+        ref.invalidate(ongoingTournamentGameProvider(_selectedTournament!.id));
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            ref.refresh(ongoingTournamentGameProvider(_selectedTournament!.id));
+          }
+        });
+      }
+    });
   }
 
   @override
@@ -140,8 +152,7 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
   }
 
   Widget _buildGameTab() {
-    ref.invalidate(ongoingGameProvider);
-    final ongoingGameAsync = ref.watch(ongoingGameProvider);
+    final ongoingGameAsync = ref.watch(ongoingRegularGameProvider);
 
     return SingleChildScrollView(
       child: Center(
@@ -229,174 +240,376 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
 
   Widget _buildTournamentTab() {
     final tournamentsAsync = ref.watch(tournamentsControllerProvider);
-    ref.invalidate(ongoingGameProvider);
-    final ongoingGameAsync = ref.watch(ongoingGameProvider);
     
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          tournamentsAsync.when(
-            initial: () => const Center(child: CircularProgressIndicator()),
-            loading: () => const Center(child: CircularProgressIndicator()),
-            success: (tournaments) {
-              final activeTournaments = tournaments.where((t) => 
-                t.status == TournamentStatus.inProgress
-              ).toList();
-              
-              if (activeTournaments.isEmpty) {
-                return Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.emoji_events,
-                          size: 120,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          'Başlatılan Turnuva Yok',
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Ayarlar > Turnuvalar menüsünden turnuva oluşturabilirsiniz',
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }
-              
-              return Column(
-                children: [
-                  SvgPicture.asset(
-                    'assets/images/logo.svg',
-                    width: 200,
-                    height: 200,
-                  ),
-                  const SizedBox(height: 32),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            tournamentsAsync.when(
+              initial: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              success: (tournaments) {
+                final activeTournaments = tournaments.where((t) => 
+                  t.status == TournamentStatus.inProgress
+                ).toList();
+                
+                if (activeTournaments.isEmpty) {
+                  return SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.6,
+                    child: Center(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          DropdownButtonFormField<Tournament>(
-                            decoration: const InputDecoration(
-                              labelText: 'Turnuva Seçin',
-                              border: OutlineInputBorder(),
-                            ),
-                            value: null,
-                            hint: const Text('Turnuva seçin'),
-                            items: activeTournaments.map((tournament) {
-                              return DropdownMenuItem<Tournament>(
-                                value: tournament,
-                                child: Text(
-                                  tournament.name,
-                                  style: const TextStyle(fontWeight: FontWeight.w600),
+                          Icon(
+                            Icons.emoji_events,
+                            size: 120,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'Başlatılan Turnuva Yok',
+                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 ),
-                              );
-                            }).toList(),
-                            onChanged: (Tournament? selectedTournament) {
-                              setState(() {
-                                _selectedTournament = selectedTournament;
-                              });
-                            },
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Ayarlar > Turnuvalar menüsünden turnuva oluşturabilirsiniz',
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                ),
+                            textAlign: TextAlign.center,
                           ),
                         ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  ongoingGameAsync.when(
-                    data: (ongoingGame) {
-                      if (ongoingGame != null) {
-                        return Column(
+                  );
+                }
+                
+                return Column(
+                  children: [
+                    SvgPicture.asset(
+                      'assets/images/logo.svg',
+                      width: 200,
+                      height: 200,
+                    ),
+                    const SizedBox(height: 32),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildMenuCard(
-                              context,
-                              title: 'Devam Eden Oyun',
-                              icon: Icons.play_circle_outline,
-                              description: 'Kaldığın yerden devam et',
-                              onTap: () {
-                                ref.read(gameControllerProvider.notifier).createGame(
-                                  name: ongoingGame.name,
-                                  mode: ongoingGame.mode,
-                                  playerNames: ongoingGame.players.map((p) => p.name).toList(),
-                                  totalRounds: ongoingGame.totalRounds,
-                                  existingGame: ongoingGame,
-                                );
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const GamePage(),
+                            DropdownButtonFormField<Tournament>(
+                              decoration: const InputDecoration(
+                                labelText: 'Turnuva Seçin',
+                                border: OutlineInputBorder(),
+                              ),
+                              value: activeTournaments.contains(_selectedTournament) ? _selectedTournament : null,
+                              hint: const Text('Turnuva seçin'),
+                              items: activeTournaments.map((tournament) {
+                                return DropdownMenuItem<Tournament>(
+                                  value: tournament,
+                                  child: Text(
+                                    tournament.name,
+                                    style: const TextStyle(fontWeight: FontWeight.w600),
                                   ),
                                 );
+                              }).toList(),
+                              onChanged: (Tournament? selectedTournament) {
+                                setState(() {
+                                  _selectedTournament = selectedTournament;
+                                });
+                                if (selectedTournament != null) {
+                                  // Provider'ı invalidate et ve hemen refresh et
+                                  ref.invalidate(ongoingTournamentGameProvider(selectedTournament.id));
+                                  Future.delayed(const Duration(milliseconds: 100), () {
+                                    if (mounted) {
+                                      ref.refresh(ongoingTournamentGameProvider(selectedTournament.id));
+                                    }
+                                  });
+                                }
                               },
                             ),
-                            const SizedBox(height: 16),
                           ],
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                    loading: () => const CircularProgressIndicator(),
-                    error: (_, __) => const SizedBox.shrink(),
-                  ),
-                  _buildMenuCard(
-                    context,
-                    title: 'Yeni Oyun',
-                    icon: Icons.add_circle_outline,
-                    description: 'Yeni bir oyun başlat',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const GameSetupPage(),
                         ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildMenuCard(
-                    context,
-                    title: 'Oyun Geçmişi',
-                    icon: Icons.history,
-                    description: 'Geçmiş oyunları görüntüle',
-                    onTap: () {
-                      Navigator.push(
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    if (_selectedTournament != null) ...[
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final scoresAsync = ref.watch(tournamentScoresProvider(_selectedTournament!.id));
+                          
+                          return scoresAsync.when(
+                            data: (scores) {
+                              if (scores.isNotEmpty) {
+                                return Column(
+                                  children: [
+                                    Card(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(16),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Turnuva Puan Tablosu',
+                                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            ...scores.asMap().entries.map((entry) {
+                                              final index = entry.key;
+                                              final score = entry.value;
+                                              return Padding(
+                                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                                child: Row(
+                                                  children: [
+                                                    Container(
+                                                      width: 30,
+                                                      height: 30,
+                                                      decoration: BoxDecoration(
+                                                        color: index == 0 
+                                                            ? Colors.amber 
+                                                            : index == 1 
+                                                                ? Colors.grey[400] 
+                                                                : index == 2 
+                                                                    ? Colors.brown[300] 
+                                                                    : Colors.grey[200],
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                      child: Center(
+                                                        child: Text(
+                                                          '${index + 1}',
+                                                          style: const TextStyle(
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 12),
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          Text(
+                                                            score.playerName,
+                                                            style: const TextStyle(
+                                                              fontWeight: FontWeight.w600,
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            '${score.totalPoints} puan • ${score.gamesPlayed} oyun',
+                                                            style: TextStyle(
+                                                              fontSize: 12,
+                                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            }),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                  ],
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                            loading: () => const CircularProgressIndicator(),
+                            error: (_, __) => const SizedBox.shrink(),
+                          );
+                        },
+                      ),
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final ongoingGameAsync = ref.watch(ongoingTournamentGameProvider(_selectedTournament!.id));
+                          
+                          return ongoingGameAsync.when(
+                            data: (ongoingGame) {
+                              if (ongoingGame != null && ongoingGame.status == GameStatus.inProgress) {
+                                return Column(
+                                  children: [
+                                    _buildMenuCard(
+                                      context,
+                                      title: 'Devam Eden Turnuva Oyunu',
+                                      icon: Icons.play_circle_outline,
+                                      description: 'Kaldığın yerden devam et',
+                                      onTap: () async {
+                                        ref.read(gameControllerProvider.notifier).createGame(
+                                          name: ongoingGame.name,
+                                          mode: ongoingGame.mode,
+                                          playerNames: ongoingGame.players.map((p) => p.name).toList(),
+                                          totalRounds: ongoingGame.totalRounds,
+                                          existingGame: ongoingGame,
+                                        );
+                                        await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => const GamePage(),
+                                          ),
+                                        );
+                                        // Geri dönüşte provider'ı yenile
+                                        if (mounted && _selectedTournament != null) {
+                                          ref.invalidate(ongoingTournamentGameProvider(_selectedTournament!.id));
+                                          ref.refresh(ongoingTournamentGameProvider(_selectedTournament!.id));
+                                        }
+                                      },
+                                    ),
+                                    const SizedBox(height: 16),
+                                  ],
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                            loading: () => const CircularProgressIndicator(),
+                            error: (_, __) => const SizedBox.shrink(),
+                          );
+                        },
+                      ),
+                      _buildMenuCard(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const GameHistoryPage(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              );
-            },
-            error: (error) => Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('Hata: ${error.message}'),
-                  const SizedBox(height: 16),
-                  AppButton(
-                    text: 'Tekrar Dene',
-                    onPressed: () => ref.refresh(tournamentsControllerProvider),
-                  ),
-                ],
+                        title: 'Yeni Turnuva Oyunu',
+                        icon: Icons.add_circle_outline,
+                        description: 'Turnuva için yeni oyun başlat',
+                        onTap: () async {
+                          _showNewTournamentGameDialog(context);
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      _buildMenuCard(
+                        context,
+                        title: 'Turnuva Oyun Geçmişi',
+                        icon: Icons.history,
+                        description: 'Turnuva oyunlarını görüntüle',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => GameHistoryPage(
+                                tournamentId: _selectedTournament!.id,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ],
+                );
+              },
+              error: (error) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Hata: ${error.message}'),
+                    const SizedBox(height: 16),
+                    AppButton(
+                      text: 'Tekrar Dene',
+                      onPressed: () => ref.refresh(tournamentsControllerProvider),
+                    ),
+                  ],
+                ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showNewTournamentGameDialog(BuildContext context) {
+    final gameNameController = TextEditingController();
+    final roundCountController = TextEditingController(text: '11');
+    final formKey = GlobalKey<FormState>();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Yeni Turnuva Oyunu'),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: gameNameController,
+                decoration: const InputDecoration(
+                  labelText: 'Oyun Adı',
+                  hintText: 'Örn: 1. El, Final Oyunu',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Oyun adı gerekli';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: roundCountController,
+                decoration: const InputDecoration(
+                  labelText: 'El Sayısı',
+                  hintText: '11',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'El sayısı gerekli';
+                  }
+                  final roundCount = int.tryParse(value);
+                  if (roundCount == null || roundCount <= 0) {
+                    return 'Geçerli bir el sayısı girin';
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('İptal'),
+          ),
+          TextButton(
+            onPressed: () async {
+              if (formKey.currentState!.validate()) {
+                final roundCount = int.parse(roundCountController.text);
+                ref.read(gameControllerProvider.notifier).createGame(
+                  name: gameNameController.text.trim(),
+                  mode: _selectedTournament!.type == TournamentType.individual 
+                      ? GameMode.individual 
+                      : GameMode.team,
+                  playerNames: _selectedTournament!.participants.map((p) => p.name).toList(),
+                  totalRounds: roundCount,
+                  tournamentId: _selectedTournament!.id,
+                );
+                Navigator.pop(context);
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const GamePage(),
+                  ),
+                );
+                // Geri dönüşte provider'ı yenile
+                if (mounted && _selectedTournament != null) {
+                  ref.invalidate(ongoingTournamentGameProvider(_selectedTournament!.id));
+                  ref.refresh(ongoingTournamentGameProvider(_selectedTournament!.id));
+                }
+              }
+            },
+            child: const Text('Başlat'),
           ),
         ],
       ),

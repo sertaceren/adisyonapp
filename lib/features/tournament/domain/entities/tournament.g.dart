@@ -41,3 +41,31 @@ const _$TournamentStatusEnumMap = {
   TournamentStatus.inProgress: 'inProgress',
   TournamentStatus.completed: 'completed',
 };
+
+_$TournamentScoreImpl _$$TournamentScoreImplFromJson(
+        Map<String, dynamic> json) =>
+    _$TournamentScoreImpl(
+      id: json['id'] as String,
+      tournamentId: json['tournamentId'] as String,
+      playerName: json['playerName'] as String,
+      totalPoints: (json['totalPoints'] as num?)?.toInt() ?? 0,
+      gamesPlayed: (json['gamesPlayed'] as num?)?.toInt() ?? 0,
+      firstPlaceCount: (json['firstPlaceCount'] as num?)?.toInt() ?? 0,
+      secondPlaceCount: (json['secondPlaceCount'] as num?)?.toInt() ?? 0,
+      thirdPlaceCount: (json['thirdPlaceCount'] as num?)?.toInt() ?? 0,
+      createdAt: json['createdAt'] as String? ?? '',
+    );
+
+Map<String, dynamic> _$$TournamentScoreImplToJson(
+        _$TournamentScoreImpl instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'tournamentId': instance.tournamentId,
+      'playerName': instance.playerName,
+      'totalPoints': instance.totalPoints,
+      'gamesPlayed': instance.gamesPlayed,
+      'firstPlaceCount': instance.firstPlaceCount,
+      'secondPlaceCount': instance.secondPlaceCount,
+      'thirdPlaceCount': instance.thirdPlaceCount,
+      'createdAt': instance.createdAt,
+    };

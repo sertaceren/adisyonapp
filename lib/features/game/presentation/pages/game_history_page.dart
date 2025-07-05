@@ -6,27 +6,38 @@ import 'package:adisyonapp/shared/widgets/base_screen.dart';
 import 'package:intl/intl.dart';
 
 class GameHistoryPage extends ConsumerWidget {
-  const GameHistoryPage({super.key});
+  final String? tournamentId;
+  
+  const GameHistoryPage({super.key, this.tournamentId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final gamesAsync = ref.watch(gameHistoryProvider);
 
     return BaseScreen(
-      title: 'Oyun Geçmişi',
+      title: tournamentId != null ? 'Turnuva Oyun Geçmişi' : 'Oyun Geçmişi',
       body: gamesAsync.when(
         data: (games) {
-          if (games.isEmpty) {
-            return const Center(
-              child: Text('Henüz kaydedilmiş oyun bulunmuyor.'),
+          // Turnuva ID'si varsa sadece o turnuvanın oyunlarını göster
+          final filteredGames = tournamentId != null 
+              ? games.where((game) => game.tournamentId == tournamentId).toList()
+              : games.where((game) => game.tournamentId == null).toList();
+          
+          if (filteredGames.isEmpty) {
+            return Center(
+              child: Text(
+                tournamentId != null 
+                    ? 'Bu turnuvada henüz oyun bulunmuyor.'
+                    : 'Henüz kaydedilmiş oyun bulunmuyor.',
+              ),
             );
           }
 
           return ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: games.length,
+            itemCount: filteredGames.length,
             itemBuilder: (context, index) {
-              final game = games[index];
+              final game = filteredGames[index];
               final winner = game.players.firstWhere(
                 (p) => p.id == game.winnerId,
                 orElse: () => game.players.first,
@@ -91,12 +102,13 @@ class GameHistoryPage extends ConsumerWidget {
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                       const SizedBox(height: 8),
-                      ...game.players.map((player) => Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
-                            child: Text(
-                              '${player.name}: ${player.totalScore}',
-                            ),
-                          )),
+                      ...(() {
+                        final sortedPlayers = [...game.players]..sort((a, b) => a.totalScore.compareTo(b.totalScore));
+                        return sortedPlayers.map((player) => Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Text('${player.name}: ${player.totalScore}'),
+                        ));
+                      })(),
                     ],
                   ),
                 ),

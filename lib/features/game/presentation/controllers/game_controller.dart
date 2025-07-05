@@ -4,6 +4,7 @@ import 'package:adisyonapp/features/game/domain/entities/game.dart';
 import 'package:adisyonapp/features/game/domain/entities/player.dart';
 import 'package:adisyonapp/core/utils/ui_state.dart';
 import 'package:adisyonapp/core/database/database_helper.dart';
+import 'package:adisyonapp/features/tournament/presentation/controllers/tournament_controller.dart';
 
 final gameControllerProvider =
     StateNotifierProvider<GameController, UiState<Game>>((ref) {
@@ -20,6 +21,32 @@ final ongoingGameProvider = FutureProvider<Game?>((ref) async {
   final games = await dbHelper.getAllGames();
   try {
     return games.firstWhere((game) => game.status == GameStatus.inProgress);
+  } catch (e) {
+    return null;
+  }
+});
+
+final ongoingTournamentGameProvider = FutureProvider.family<Game?, String?>((ref, tournamentId) async {
+  final dbHelper = DatabaseHelper();
+  final games = await dbHelper.getAllGames();
+  try {
+    return games.firstWhere((game) => 
+      game.status == GameStatus.inProgress && 
+      game.tournamentId == tournamentId
+    );
+  } catch (e) {
+    return null;
+  }
+});
+
+final ongoingRegularGameProvider = FutureProvider<Game?>((ref) async {
+  final dbHelper = DatabaseHelper();
+  final games = await dbHelper.getAllGames();
+  try {
+    return games.firstWhere((game) => 
+      game.status == GameStatus.inProgress && 
+      game.tournamentId == null
+    );
   } catch (e) {
     return null;
   }
@@ -45,6 +72,7 @@ class GameController extends StateNotifier<UiState<Game>> {
     required List<String> playerNames,
     int? totalRounds,
     Game? existingGame, // Mevcut oyunu devam ettirmek için
+    String? tournamentId, // Turnuva ID'si
   }) {
     if (existingGame != null) {
       // Mevcut oyunu devam ettir
@@ -74,6 +102,7 @@ class GameController extends StateNotifier<UiState<Game>> {
       totalRounds: totalRounds ?? 11,
       createdAt: DateTime.now().toIso8601String(),
       currentDealerIndex: 0,
+      tournamentId: tournamentId,
     );
 
     state = UiState.success(game);
@@ -262,6 +291,16 @@ class GameController extends StateNotifier<UiState<Game>> {
     await _dbHelper.saveGame(game);
     if (game.status == GameStatus.completed) {
       ref.invalidate(gameHistoryProvider);
+      // Turnuva oyunları için de invalidate et
+      if (game.tournamentId != null) {
+        ref.invalidate(ongoingTournamentGameProvider(game.tournamentId!));
+        // Turnuva puanlarını güncelle
+        await _dbHelper.updateTournamentScores(game.tournamentId!, game);
+        // Turnuva puanları provider'ını invalidate et
+        ref.invalidate(tournamentScoresProvider(game.tournamentId!));
+      } else {
+        ref.invalidate(ongoingRegularGameProvider);
+      }
     }
   }
 }

@@ -300,3 +300,341 @@ abstract class _Tournament implements Tournament {
   _$$TournamentImplCopyWith<_$TournamentImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
+
+TournamentScore _$TournamentScoreFromJson(Map<String, dynamic> json) {
+  return _TournamentScore.fromJson(json);
+}
+
+/// @nodoc
+mixin _$TournamentScore {
+  String get id => throw _privateConstructorUsedError;
+  String get tournamentId => throw _privateConstructorUsedError;
+  String get playerName => throw _privateConstructorUsedError;
+  int get totalPoints => throw _privateConstructorUsedError;
+  int get gamesPlayed => throw _privateConstructorUsedError;
+  int get firstPlaceCount => throw _privateConstructorUsedError;
+  int get secondPlaceCount => throw _privateConstructorUsedError;
+  int get thirdPlaceCount => throw _privateConstructorUsedError;
+  String get createdAt => throw _privateConstructorUsedError;
+
+  /// Serializes this TournamentScore to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of TournamentScore
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $TournamentScoreCopyWith<TournamentScore> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $TournamentScoreCopyWith<$Res> {
+  factory $TournamentScoreCopyWith(
+          TournamentScore value, $Res Function(TournamentScore) then) =
+      _$TournamentScoreCopyWithImpl<$Res, TournamentScore>;
+  @useResult
+  $Res call(
+      {String id,
+      String tournamentId,
+      String playerName,
+      int totalPoints,
+      int gamesPlayed,
+      int firstPlaceCount,
+      int secondPlaceCount,
+      int thirdPlaceCount,
+      String createdAt});
+}
+
+/// @nodoc
+class _$TournamentScoreCopyWithImpl<$Res, $Val extends TournamentScore>
+    implements $TournamentScoreCopyWith<$Res> {
+  _$TournamentScoreCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of TournamentScore
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? tournamentId = null,
+    Object? playerName = null,
+    Object? totalPoints = null,
+    Object? gamesPlayed = null,
+    Object? firstPlaceCount = null,
+    Object? secondPlaceCount = null,
+    Object? thirdPlaceCount = null,
+    Object? createdAt = null,
+  }) {
+    return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      tournamentId: null == tournamentId
+          ? _value.tournamentId
+          : tournamentId // ignore: cast_nullable_to_non_nullable
+              as String,
+      playerName: null == playerName
+          ? _value.playerName
+          : playerName // ignore: cast_nullable_to_non_nullable
+              as String,
+      totalPoints: null == totalPoints
+          ? _value.totalPoints
+          : totalPoints // ignore: cast_nullable_to_non_nullable
+              as int,
+      gamesPlayed: null == gamesPlayed
+          ? _value.gamesPlayed
+          : gamesPlayed // ignore: cast_nullable_to_non_nullable
+              as int,
+      firstPlaceCount: null == firstPlaceCount
+          ? _value.firstPlaceCount
+          : firstPlaceCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      secondPlaceCount: null == secondPlaceCount
+          ? _value.secondPlaceCount
+          : secondPlaceCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      thirdPlaceCount: null == thirdPlaceCount
+          ? _value.thirdPlaceCount
+          : thirdPlaceCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$TournamentScoreImplCopyWith<$Res>
+    implements $TournamentScoreCopyWith<$Res> {
+  factory _$$TournamentScoreImplCopyWith(_$TournamentScoreImpl value,
+          $Res Function(_$TournamentScoreImpl) then) =
+      __$$TournamentScoreImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {String id,
+      String tournamentId,
+      String playerName,
+      int totalPoints,
+      int gamesPlayed,
+      int firstPlaceCount,
+      int secondPlaceCount,
+      int thirdPlaceCount,
+      String createdAt});
+}
+
+/// @nodoc
+class __$$TournamentScoreImplCopyWithImpl<$Res>
+    extends _$TournamentScoreCopyWithImpl<$Res, _$TournamentScoreImpl>
+    implements _$$TournamentScoreImplCopyWith<$Res> {
+  __$$TournamentScoreImplCopyWithImpl(
+      _$TournamentScoreImpl _value, $Res Function(_$TournamentScoreImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of TournamentScore
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? tournamentId = null,
+    Object? playerName = null,
+    Object? totalPoints = null,
+    Object? gamesPlayed = null,
+    Object? firstPlaceCount = null,
+    Object? secondPlaceCount = null,
+    Object? thirdPlaceCount = null,
+    Object? createdAt = null,
+  }) {
+    return _then(_$TournamentScoreImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      tournamentId: null == tournamentId
+          ? _value.tournamentId
+          : tournamentId // ignore: cast_nullable_to_non_nullable
+              as String,
+      playerName: null == playerName
+          ? _value.playerName
+          : playerName // ignore: cast_nullable_to_non_nullable
+              as String,
+      totalPoints: null == totalPoints
+          ? _value.totalPoints
+          : totalPoints // ignore: cast_nullable_to_non_nullable
+              as int,
+      gamesPlayed: null == gamesPlayed
+          ? _value.gamesPlayed
+          : gamesPlayed // ignore: cast_nullable_to_non_nullable
+              as int,
+      firstPlaceCount: null == firstPlaceCount
+          ? _value.firstPlaceCount
+          : firstPlaceCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      secondPlaceCount: null == secondPlaceCount
+          ? _value.secondPlaceCount
+          : secondPlaceCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      thirdPlaceCount: null == thirdPlaceCount
+          ? _value.thirdPlaceCount
+          : thirdPlaceCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$TournamentScoreImpl implements _TournamentScore {
+  const _$TournamentScoreImpl(
+      {required this.id,
+      required this.tournamentId,
+      required this.playerName,
+      this.totalPoints = 0,
+      this.gamesPlayed = 0,
+      this.firstPlaceCount = 0,
+      this.secondPlaceCount = 0,
+      this.thirdPlaceCount = 0,
+      this.createdAt = ''});
+
+  factory _$TournamentScoreImpl.fromJson(Map<String, dynamic> json) =>
+      _$$TournamentScoreImplFromJson(json);
+
+  @override
+  final String id;
+  @override
+  final String tournamentId;
+  @override
+  final String playerName;
+  @override
+  @JsonKey()
+  final int totalPoints;
+  @override
+  @JsonKey()
+  final int gamesPlayed;
+  @override
+  @JsonKey()
+  final int firstPlaceCount;
+  @override
+  @JsonKey()
+  final int secondPlaceCount;
+  @override
+  @JsonKey()
+  final int thirdPlaceCount;
+  @override
+  @JsonKey()
+  final String createdAt;
+
+  @override
+  String toString() {
+    return 'TournamentScore(id: $id, tournamentId: $tournamentId, playerName: $playerName, totalPoints: $totalPoints, gamesPlayed: $gamesPlayed, firstPlaceCount: $firstPlaceCount, secondPlaceCount: $secondPlaceCount, thirdPlaceCount: $thirdPlaceCount, createdAt: $createdAt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$TournamentScoreImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.tournamentId, tournamentId) ||
+                other.tournamentId == tournamentId) &&
+            (identical(other.playerName, playerName) ||
+                other.playerName == playerName) &&
+            (identical(other.totalPoints, totalPoints) ||
+                other.totalPoints == totalPoints) &&
+            (identical(other.gamesPlayed, gamesPlayed) ||
+                other.gamesPlayed == gamesPlayed) &&
+            (identical(other.firstPlaceCount, firstPlaceCount) ||
+                other.firstPlaceCount == firstPlaceCount) &&
+            (identical(other.secondPlaceCount, secondPlaceCount) ||
+                other.secondPlaceCount == secondPlaceCount) &&
+            (identical(other.thirdPlaceCount, thirdPlaceCount) ||
+                other.thirdPlaceCount == thirdPlaceCount) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      tournamentId,
+      playerName,
+      totalPoints,
+      gamesPlayed,
+      firstPlaceCount,
+      secondPlaceCount,
+      thirdPlaceCount,
+      createdAt);
+
+  /// Create a copy of TournamentScore
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$TournamentScoreImplCopyWith<_$TournamentScoreImpl> get copyWith =>
+      __$$TournamentScoreImplCopyWithImpl<_$TournamentScoreImpl>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$TournamentScoreImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _TournamentScore implements TournamentScore {
+  const factory _TournamentScore(
+      {required final String id,
+      required final String tournamentId,
+      required final String playerName,
+      final int totalPoints,
+      final int gamesPlayed,
+      final int firstPlaceCount,
+      final int secondPlaceCount,
+      final int thirdPlaceCount,
+      final String createdAt}) = _$TournamentScoreImpl;
+
+  factory _TournamentScore.fromJson(Map<String, dynamic> json) =
+      _$TournamentScoreImpl.fromJson;
+
+  @override
+  String get id;
+  @override
+  String get tournamentId;
+  @override
+  String get playerName;
+  @override
+  int get totalPoints;
+  @override
+  int get gamesPlayed;
+  @override
+  int get firstPlaceCount;
+  @override
+  int get secondPlaceCount;
+  @override
+  int get thirdPlaceCount;
+  @override
+  String get createdAt;
+
+  /// Create a copy of TournamentScore
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$TournamentScoreImplCopyWith<_$TournamentScoreImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}

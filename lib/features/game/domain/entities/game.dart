@@ -27,6 +27,7 @@ class Game with _$Game {
     String? winnerId,
     @Default('') String createdAt,
     @Default(0) int currentDealerIndex,
+    String? tournamentId,
   }) = _Game;
 
   factory Game.fromJson(Map<String, dynamic> json) => _$GameFromJson(json);

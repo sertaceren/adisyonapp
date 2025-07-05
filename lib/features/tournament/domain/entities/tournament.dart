@@ -28,4 +28,21 @@ class Tournament with _$Tournament {
   }) = _Tournament;
 
   factory Tournament.fromJson(Map<String, dynamic> json) => _$TournamentFromJson(json);
+}
+
+@freezed
+class TournamentScore with _$TournamentScore {
+  const factory TournamentScore({
+    required String id,
+    required String tournamentId,
+    required String playerName,
+    @Default(0) int totalPoints,
+    @Default(0) int gamesPlayed,
+    @Default(0) int firstPlaceCount,
+    @Default(0) int secondPlaceCount,
+    @Default(0) int thirdPlaceCount,
+    @Default('') String createdAt,
+  }) = _TournamentScore;
+
+  factory TournamentScore.fromJson(Map<String, dynamic> json) => _$TournamentScoreFromJson(json);
 } 

@@ -22,7 +22,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'game_history.db');
     return await openDatabase(
       path,
-      version: 4,
+      version: 6,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -40,7 +40,8 @@ class DatabaseHelper {
         status TEXT,
         winnerId TEXT,
         createdAt TEXT,
-        currentDealerIndex INTEGER DEFAULT 0
+        currentDealerIndex INTEGER DEFAULT 0,
+        tournamentId TEXT
       )
     ''');
 
@@ -102,6 +103,22 @@ class DatabaseHelper {
         FOREIGN KEY (tournamentId) REFERENCES tournaments (id)
       )
     ''');
+
+    // Turnuva puanları tablosu
+    await db.execute('''
+      CREATE TABLE tournament_scores(
+        id TEXT PRIMARY KEY,
+        tournamentId TEXT,
+        playerName TEXT,
+        totalPoints INTEGER DEFAULT 0,
+        gamesPlayed INTEGER DEFAULT 0,
+        firstPlaceCount INTEGER DEFAULT 0,
+        secondPlaceCount INTEGER DEFAULT 0,
+        thirdPlaceCount INTEGER DEFAULT 0,
+        createdAt TEXT,
+        FOREIGN KEY (tournamentId) REFERENCES tournaments (id)
+      )
+    ''');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -146,6 +163,29 @@ class DatabaseHelper {
         )
       ''');
     }
+
+    if (oldVersion < 5) {
+      // Games tablosuna tournamentId sütunu ekle
+      await db.execute('ALTER TABLE games ADD COLUMN tournamentId TEXT');
+    }
+
+    if (oldVersion < 6) {
+      // Turnuva puanları tablosunu ekle
+      await db.execute('''
+        CREATE TABLE tournament_scores(
+          id TEXT PRIMARY KEY,
+          tournamentId TEXT,
+          playerName TEXT,
+          totalPoints INTEGER DEFAULT 0,
+          gamesPlayed INTEGER DEFAULT 0,
+          firstPlaceCount INTEGER DEFAULT 0,
+          secondPlaceCount INTEGER DEFAULT 0,
+          thirdPlaceCount INTEGER DEFAULT 0,
+          createdAt TEXT,
+          FOREIGN KEY (tournamentId) REFERENCES tournaments (id)
+        )
+      ''');
+    }
   }
 
   Future<void> saveGame(Game game) async {
@@ -164,6 +204,7 @@ class DatabaseHelper {
           'winnerId': game.winnerId,
           'createdAt': DateTime.now().toIso8601String(),
           'currentDealerIndex': game.currentDealerIndex,
+          'tournamentId': game.tournamentId,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
@@ -249,6 +290,7 @@ class DatabaseHelper {
         players: players,
         createdAt: gameMap['createdAt'] as String? ?? DateTime.now().toIso8601String(),
         currentDealerIndex: gameMap['currentDealerIndex'] as int? ?? 0,
+        tournamentId: gameMap['tournamentId'],
       );
     }));
   }
@@ -399,10 +441,108 @@ class DatabaseHelper {
         whereArgs: [tournamentId],
       );
       await txn.delete(
+        'tournament_scores',
+        where: 'tournamentId = ?',
+        whereArgs: [tournamentId],
+      );
+      await txn.delete(
         'tournaments',
         where: 'id = ?',
         whereArgs: [tournamentId],
       );
     });
+  }
+
+  // Turnuva puanları metodları
+  Future<void> saveTournamentScore(TournamentScore score) async {
+    final db = await database;
+    await db.insert(
+      'tournament_scores',
+      {
+        'id': score.id,
+        'tournamentId': score.tournamentId,
+        'playerName': score.playerName,
+        'totalPoints': score.totalPoints,
+        'gamesPlayed': score.gamesPlayed,
+        'firstPlaceCount': score.firstPlaceCount,
+        'secondPlaceCount': score.secondPlaceCount,
+        'thirdPlaceCount': score.thirdPlaceCount,
+        'createdAt': score.createdAt,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<List<TournamentScore>> getTournamentScores(String tournamentId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> scoreMaps = await db.query(
+      'tournament_scores',
+      where: 'tournamentId = ?',
+      whereArgs: [tournamentId],
+      orderBy: 'totalPoints DESC, firstPlaceCount DESC, secondPlaceCount DESC',
+    );
+
+    return scoreMaps.map((scoreMap) => TournamentScore(
+      id: scoreMap['id'],
+      tournamentId: scoreMap['tournamentId'],
+      playerName: scoreMap['playerName'],
+      totalPoints: scoreMap['totalPoints'] as int? ?? 0,
+      gamesPlayed: scoreMap['gamesPlayed'] as int? ?? 0,
+      firstPlaceCount: scoreMap['firstPlaceCount'] as int? ?? 0,
+      secondPlaceCount: scoreMap['secondPlaceCount'] as int? ?? 0,
+      thirdPlaceCount: scoreMap['thirdPlaceCount'] as int? ?? 0,
+      createdAt: scoreMap['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+    )).toList();
+  }
+
+  Future<void> updateTournamentScores(String tournamentId, Game game) async {
+    if (game.tournamentId != tournamentId || game.status != GameStatus.completed) {
+      return;
+    }
+
+    // Oyuncuları puanına göre sırala (küçükten büyüğe)
+    final sortedPlayers = [...game.players]..sort((a, b) => a.totalScore.compareTo(b.totalScore));
+    
+    // Puanları hesapla: 1. 5 puan, 2. 3 puan, 3. 1 puan
+    final points = [5, 3, 1];
+    
+    for (int i = 0; i < sortedPlayers.length; i++) {
+      final player = sortedPlayers[i];
+      final earnedPoints = i < points.length ? points[i] : 0;
+      
+      // Mevcut skoru al veya yeni oluştur
+      final existingScores = await getTournamentScores(tournamentId);
+      final existingScore = existingScores.firstWhere(
+        (score) => score.playerName == player.name,
+        orElse: () => TournamentScore(
+          id: '${tournamentId}_${player.name}',
+          tournamentId: tournamentId,
+          playerName: player.name,
+        ),
+      );
+
+      // Yeni skoru hesapla
+      final newTotalPoints = existingScore.totalPoints + earnedPoints;
+      final newGamesPlayed = existingScore.gamesPlayed + 1;
+      
+      // Sıralama sayılarını güncelle
+      int newFirstPlaceCount = existingScore.firstPlaceCount;
+      int newSecondPlaceCount = existingScore.secondPlaceCount;
+      int newThirdPlaceCount = existingScore.thirdPlaceCount;
+      
+      if (i == 0) newFirstPlaceCount++;
+      else if (i == 1) newSecondPlaceCount++;
+      else if (i == 2) newThirdPlaceCount++;
+
+      final updatedScore = existingScore.copyWith(
+        totalPoints: newTotalPoints,
+        gamesPlayed: newGamesPlayed,
+        firstPlaceCount: newFirstPlaceCount,
+        secondPlaceCount: newSecondPlaceCount,
+        thirdPlaceCount: newThirdPlaceCount,
+      );
+
+      await saveTournamentScore(updatedScore);
+    }
   }
 } 

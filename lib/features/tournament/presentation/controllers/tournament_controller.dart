@@ -11,6 +11,11 @@ final tournamentsControllerProvider =
   return TournamentsController(ref);
 });
 
+final tournamentScoresProvider = FutureProvider.family<List<TournamentScore>, String>((ref, tournamentId) async {
+  final dbHelper = DatabaseHelper();
+  return await dbHelper.getTournamentScores(tournamentId);
+});
+
 class TournamentsController extends StateNotifier<UiState<List<Tournament>>> {
   final _dbHelper = DatabaseHelper();
   final Ref ref;

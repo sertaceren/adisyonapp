@@ -20,6 +20,7 @@ _$GameImpl _$$GameImplFromJson(Map<String, dynamic> json) => _$GameImpl(
       winnerId: json['winnerId'] as String?,
       createdAt: json['createdAt'] as String? ?? '',
       currentDealerIndex: (json['currentDealerIndex'] as num?)?.toInt() ?? 0,
+      tournamentId: json['tournamentId'] as String?,
     );
 
 Map<String, dynamic> _$$GameImplToJson(_$GameImpl instance) =>
@@ -34,6 +35,7 @@ Map<String, dynamic> _$$GameImplToJson(_$GameImpl instance) =>
       'winnerId': instance.winnerId,
       'createdAt': instance.createdAt,
       'currentDealerIndex': instance.currentDealerIndex,
+      'tournamentId': instance.tournamentId,
     };
 
 const _$GameModeEnumMap = {
