@@ -28,11 +28,22 @@ class GamePage extends ConsumerWidget {
           actions: [
             IconButton(
               onPressed: () {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => const HomePage(),
-                  ),
-                );
+                if (game.tournamentId != null) {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => HomePage(
+                        initialTabIndex: 1,
+                        tournamentId: game.tournamentId,
+                      ),
+                    ),
+                  );
+                } else {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => const HomePage(initialTabIndex: 0),
+                    ),
+                  );
+                }
               },
               icon: const Icon(Icons.home),
               tooltip: 'Anasayfa',
@@ -295,6 +306,9 @@ class GamePage extends ConsumerWidget {
   }
 
   void _shareToInstagram(BuildContext context, Game game, Player winner) {
+    // Oyuncuları puanlarına göre sırala (küçükten büyüğe)
+    final sortedPlayers = [...game.players]..sort((a, b) => a.totalScore.compareTo(b.totalScore));
+    
     final message = '''
 🎮 ${game.name}
 
@@ -302,7 +316,13 @@ class GamePage extends ConsumerWidget {
 📊 Toplam Skor: ${winner.totalScore}
 🎯 ${game.totalRounds} El Oynandı
 
-${game.players.map((p) => '${p.name}: ${p.totalScore}').join('\n')}
+📋 Final Sıralaması:
+${sortedPlayers.asMap().entries.map((entry) {
+  final index = entry.key;
+  final player = entry.value;
+  final medal = index == 0 ? '🥇' : index == 1 ? '🥈' : index == 2 ? '🥉' : '${index + 1}.';
+  return '$medal ${player.name}: ${player.totalScore}';
+}).join('\n')}
 ''';
 
     Share.share(message, subject: '101 Oyunu Sonucu');

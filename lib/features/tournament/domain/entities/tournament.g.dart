@@ -18,6 +18,8 @@ _$TournamentImpl _$$TournamentImplFromJson(Map<String, dynamic> json) =>
           .toList(),
       createdAt: json['createdAt'] as String? ?? '',
       updatedAt: json['updatedAt'] as String? ?? '',
+      startedAt: json['startedAt'] as String? ?? '',
+      completedAt: json['completedAt'] as String? ?? '',
     );
 
 Map<String, dynamic> _$$TournamentImplToJson(_$TournamentImpl instance) =>
@@ -29,6 +31,8 @@ Map<String, dynamic> _$$TournamentImplToJson(_$TournamentImpl instance) =>
       'participants': instance.participants,
       'createdAt': instance.createdAt,
       'updatedAt': instance.updatedAt,
+      'startedAt': instance.startedAt,
+      'completedAt': instance.completedAt,
     };
 
 const _$TournamentTypeEnumMap = {

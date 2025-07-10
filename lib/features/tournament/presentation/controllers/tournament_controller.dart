@@ -86,6 +86,7 @@ class TournamentsController extends StateNotifier<UiState<List<Tournament>>> {
             return tournament.copyWith(
               status: TournamentStatus.inProgress,
               updatedAt: DateTime.now().toIso8601String(),
+              startedAt: DateTime.now().toIso8601String(),
             );
           }
           return tournament;
@@ -111,6 +112,7 @@ class TournamentsController extends StateNotifier<UiState<List<Tournament>>> {
             return tournament.copyWith(
               status: TournamentStatus.completed,
               updatedAt: DateTime.now().toIso8601String(),
+              completedAt: DateTime.now().toIso8601String(),
             );
           }
           return tournament;

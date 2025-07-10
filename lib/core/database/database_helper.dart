@@ -22,7 +22,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'game_history.db');
     return await openDatabase(
       path,
-      version: 6,
+      version: 7,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -185,6 +185,12 @@ class DatabaseHelper {
           FOREIGN KEY (tournamentId) REFERENCES tournaments (id)
         )
       ''');
+    }
+
+    if (oldVersion < 7) {
+      // Turnuva tablosuna başlangıç ve bitiş tarihleri sütunlarını ekle
+      await db.execute('ALTER TABLE tournaments ADD COLUMN startedAt TEXT DEFAULT ""');
+      await db.execute('ALTER TABLE tournaments ADD COLUMN completedAt TEXT DEFAULT ""');
     }
   }
 
@@ -369,6 +375,8 @@ class DatabaseHelper {
           'status': tournament.status.toString(),
           'createdAt': tournament.createdAt,
           'updatedAt': tournament.updatedAt,
+          'startedAt': tournament.startedAt,
+          'completedAt': tournament.completedAt,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
@@ -428,6 +436,8 @@ class DatabaseHelper {
         participants: participants,
         createdAt: tournamentMap['createdAt'] as String? ?? DateTime.now().toIso8601String(),
         updatedAt: tournamentMap['updatedAt'] as String? ?? DateTime.now().toIso8601String(),
+        startedAt: tournamentMap['startedAt'] as String? ?? '',
+        completedAt: tournamentMap['completedAt'] as String? ?? '',
       );
     }));
   }

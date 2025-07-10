@@ -13,7 +13,10 @@ import 'package:adisyonapp/features/tournament/domain/entities/tournament.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class HomePage extends ConsumerStatefulWidget {
-  const HomePage({super.key});
+  final int initialTabIndex;
+  final String? tournamentId;
+  
+  const HomePage({super.key, this.initialTabIndex = 0, this.tournamentId});
 
   @override
   ConsumerState<HomePage> createState() => _HomePageState();
@@ -38,6 +41,43 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
         });
       }
     });
+    
+    // Initial tab index'i ayarla
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.initialTabIndex < _tabController.length) {
+        _tabController.animateTo(widget.initialTabIndex);
+      }
+      
+      // Eğer tournamentId verilmişse, o turnuvayı seç
+      if (widget.tournamentId != null) {
+        _selectTournamentById(widget.tournamentId!);
+      }
+    });
+  }
+
+  void _selectTournamentById(String tournamentId) {
+    final tournamentsAsync = ref.read(tournamentsControllerProvider);
+    tournamentsAsync.when(
+      initial: () {},
+      loading: () {},
+      success: (tournaments) {
+        final tournament = tournaments.firstWhere(
+          (t) => t.id == tournamentId,
+          orElse: () => tournaments.first,
+        );
+        setState(() {
+          _selectedTournament = tournament;
+        });
+        // Provider'ı invalidate et ve hemen refresh et
+        ref.invalidate(ongoingTournamentGameProvider(tournament.id));
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            ref.refresh(ongoingTournamentGameProvider(tournament.id));
+          }
+        });
+      },
+      error: (error) {},
+    );
   }
 
   @override
@@ -359,56 +399,225 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
                                                 fontWeight: FontWeight.bold,
                                               ),
                                             ),
+                                            const SizedBox(height: 16),
+                                            // Başlık satırı
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                              decoration: BoxDecoration(
+                                                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  SizedBox(
+                                                    width: 40,
+                                                    child: Text(
+                                                      'Sıra',
+                                                      style: TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Theme.of(context).colorScheme.primary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    flex: 2,
+                                                    child: Text(
+                                                      'Oyuncu',
+                                                      style: TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Theme.of(context).colorScheme.primary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      'O',
+                                                      textAlign: TextAlign.center,
+                                                      style: TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Theme.of(context).colorScheme.primary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      '1.',
+                                                      textAlign: TextAlign.center,
+                                                      style: TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Theme.of(context).colorScheme.primary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      '2.',
+                                                      textAlign: TextAlign.center,
+                                                      style: TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Theme.of(context).colorScheme.primary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      '3.',
+                                                      textAlign: TextAlign.center,
+                                                      style: TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Theme.of(context).colorScheme.primary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      '4.',
+                                                      textAlign: TextAlign.center,
+                                                      style: TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Theme.of(context).colorScheme.primary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    child: Text(
+                                                      'P',
+                                                      textAlign: TextAlign.center,
+                                                      style: TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Theme.of(context).colorScheme.primary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
                                             const SizedBox(height: 8),
+                                            // Oyuncu satırları
                                             ...scores.asMap().entries.map((entry) {
                                               final index = entry.key;
                                               final score = entry.value;
-                                              return Padding(
-                                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                              final fourthPlaceCount = score.gamesPlayed - score.firstPlaceCount - score.secondPlaceCount - score.thirdPlaceCount;
+                                              
+                                              return Container(
+                                                margin: const EdgeInsets.only(bottom: 4),
+                                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                                decoration: BoxDecoration(
+                                                  color: index == 0 
+                                                      ? Colors.amber.withOpacity(0.1)
+                                                      : index == 1 
+                                                          ? Colors.grey.withOpacity(0.1)
+                                                          : index == 2 
+                                                              ? Colors.brown.withOpacity(0.1)
+                                                              : Colors.grey.withOpacity(0.05),
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  border: Border.all(
+                                                    color: index == 0 
+                                                        ? Colors.amber 
+                                                        : index == 1 
+                                                            ? Colors.grey 
+                                                            : index == 2 
+                                                                ? Colors.brown 
+                                                                : Colors.grey.withOpacity(0.3),
+                                                    width: 1,
+                                                  ),
+                                                ),
                                                 child: Row(
                                                   children: [
-                                                    Container(
-                                                      width: 30,
-                                                      height: 30,
-                                                      decoration: BoxDecoration(
-                                                        color: index == 0 
-                                                            ? Colors.amber 
-                                                            : index == 1 
-                                                                ? Colors.grey[400] 
-                                                                : index == 2 
-                                                                    ? Colors.brown[300] 
-                                                                    : Colors.grey[200],
-                                                        shape: BoxShape.circle,
-                                                      ),
-                                                      child: Center(
-                                                        child: Text(
-                                                          '${index + 1}',
-                                                          style: const TextStyle(
-                                                            fontWeight: FontWeight.bold,
-                                                            color: Colors.white,
+                                                    SizedBox(
+                                                      width: 40,
+                                                      child: Container(
+                                                        width: 24,
+                                                        height: 24,
+                                                        decoration: BoxDecoration(
+                                                          color: index == 0 
+                                                              ? Colors.amber 
+                                                              : index == 1 
+                                                                  ? Colors.grey[400] 
+                                                                  : index == 2 
+                                                                      ? Colors.brown[300] 
+                                                                      : Colors.grey[200],
+                                                          shape: BoxShape.circle,
+                                                        ),
+                                                        child: Center(
+                                                          child: Text(
+                                                            '${index + 1}',
+                                                            style: const TextStyle(
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.white,
+                                                              fontSize: 12,
+                                                            ),
                                                           ),
                                                         ),
                                                       ),
                                                     ),
-                                                    const SizedBox(width: 12),
                                                     Expanded(
-                                                      child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          Text(
-                                                            score.playerName,
-                                                            style: const TextStyle(
-                                                              fontWeight: FontWeight.w600,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                            '${score.totalPoints} puan • ${score.gamesPlayed} oyun',
-                                                            style: TextStyle(
-                                                              fontSize: 12,
-                                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                                            ),
-                                                          ),
-                                                        ],
+                                                      flex: 2,
+                                                      child: Text(
+                                                        score.playerName,
+                                                        style: const TextStyle(
+                                                          fontWeight: FontWeight.w600,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Expanded(
+                                                      child: Text(
+                                                        '${score.gamesPlayed}',
+                                                        textAlign: TextAlign.center,
+                                                        style: const TextStyle(
+                                                          fontWeight: FontWeight.w600,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Expanded(
+                                                      child: Text(
+                                                        '${score.firstPlaceCount}',
+                                                        textAlign: TextAlign.center,
+                                                        style: const TextStyle(
+                                                          fontWeight: FontWeight.w600,
+                                                          color: Colors.amber,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Expanded(
+                                                      child: Text(
+                                                        '${score.secondPlaceCount}',
+                                                        textAlign: TextAlign.center,
+                                                        style: const TextStyle(
+                                                          fontWeight: FontWeight.w600,
+                                                          color: Colors.grey,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Expanded(
+                                                      child: Text(
+                                                        '${score.thirdPlaceCount}',
+                                                        textAlign: TextAlign.center,
+                                                        style: const TextStyle(
+                                                          fontWeight: FontWeight.w600,
+                                                          color: Colors.brown,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Expanded(
+                                                      child: Text(
+                                                        '$fourthPlaceCount',
+                                                        textAlign: TextAlign.center,
+                                                        style: const TextStyle(
+                                                          fontWeight: FontWeight.w600,
+                                                          color: Colors.grey,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Expanded(
+                                                      child: Text(
+                                                        '${score.totalPoints}',
+                                                        textAlign: TextAlign.center,
+                                                        style: TextStyle(
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 16,
+                                                          color: Theme.of(context).colorScheme.primary,
+                                                        ),
                                                       ),
                                                     ),
                                                   ],
@@ -531,87 +740,201 @@ class _HomePageState extends ConsumerState<HomePage> with SingleTickerProviderSt
     final roundCountController = TextEditingController(text: '11');
     final formKey = GlobalKey<FormState>();
     
+    // Oyuncuları sürükleyip bırakabilmek için state
+    List<String> playerNames = _selectedTournament!.participants.map((p) => p.name).toList();
+    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Yeni Turnuva Oyunu'),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: gameNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Oyun Adı',
-                  hintText: 'Örn: 1. El, Final Oyunu',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Oyun adı gerekli';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: roundCountController,
-                decoration: const InputDecoration(
-                  labelText: 'El Sayısı',
-                  hintText: '11',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'El sayısı gerekli';
-                  }
-                  final roundCount = int.tryParse(value);
-                  if (roundCount == null || roundCount <= 0) {
-                    return 'Geçerli bir el sayısı girin';
-                  }
-                  return null;
-                },
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
-          ),
-          TextButton(
-            onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                final roundCount = int.parse(roundCountController.text);
-                ref.read(gameControllerProvider.notifier).createGame(
-                  name: gameNameController.text.trim(),
-                  mode: _selectedTournament!.type == TournamentType.individual 
-                      ? GameMode.individual 
-                      : GameMode.team,
-                  playerNames: _selectedTournament!.participants.map((p) => p.name).toList(),
-                  totalRounds: roundCount,
-                  tournamentId: _selectedTournament!.id,
-                );
-                Navigator.pop(context);
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const GamePage(),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Yeni Turnuva Oyunu'),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: MediaQuery.of(context).size.height * 0.7,
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: gameNameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Oyun Adı',
+                      hintText: 'Örn: 1. El, Final Oyunu',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Oyun adı gerekli';
+                      }
+                      return null;
+                    },
                   ),
-                );
-                // Geri dönüşte provider'ı yenile
-                if (mounted && _selectedTournament != null) {
-                  ref.invalidate(ongoingTournamentGameProvider(_selectedTournament!.id));
-                  ref.refresh(ongoingTournamentGameProvider(_selectedTournament!.id));
-                }
-              }
-            },
-            child: const Text('Başlat'),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: roundCountController,
+                    decoration: const InputDecoration(
+                      labelText: 'El Sayısı',
+                      hintText: '11',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'El sayısı gerekli';
+                      }
+                      final roundCount = int.tryParse(value);
+                      if (roundCount == null || roundCount <= 0) {
+                        return 'Geçerli bir el sayısı girin';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  // Oyuncu sıralaması
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.people,
+                                  size: 20,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Oyuncu Sıralaması',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: ReorderableListView.builder(
+                              shrinkWrap: true,
+                              itemCount: playerNames.length,
+                              onReorder: (oldIndex, newIndex) {
+                                setState(() {
+                                  if (oldIndex < newIndex) {
+                                    newIndex -= 1;
+                                  }
+                                  final item = playerNames.removeAt(oldIndex);
+                                  playerNames.insert(newIndex, item);
+                                });
+                              },
+                              itemBuilder: (context, index) {
+                                return Container(
+                                  key: ValueKey(playerNames[index]),
+                                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.05),
+                                        blurRadius: 2,
+                                        offset: const Offset(0, 1),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ListTile(
+                                    leading: Container(
+                                      width: 32,
+                                      height: 32,
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          '${index + 1}',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Theme.of(context).colorScheme.primary,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    title: Text(
+                                      playerNames[index],
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    trailing: Icon(
+                                      Icons.drag_handle,
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('İptal'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (formKey.currentState!.validate()) {
+                  final roundCount = int.parse(roundCountController.text);
+                  ref.read(gameControllerProvider.notifier).createGame(
+                    name: gameNameController.text.trim(),
+                    mode: _selectedTournament!.type == TournamentType.individual 
+                        ? GameMode.individual 
+                        : GameMode.team,
+                    playerNames: playerNames, // Sıralanmış oyuncu listesi
+                    totalRounds: roundCount,
+                    tournamentId: _selectedTournament!.id,
+                  );
+                  Navigator.pop(context);
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const GamePage(),
+                    ),
+                  );
+                  // Geri dönüşte provider'ı yenile
+                  if (mounted && _selectedTournament != null) {
+                    ref.invalidate(ongoingTournamentGameProvider(_selectedTournament!.id));
+                    ref.refresh(ongoingTournamentGameProvider(_selectedTournament!.id));
+                  }
+                }
+              },
+              child: const Text('Başlat'),
+            ),
+          ],
+        ),
       ),
     );
   }

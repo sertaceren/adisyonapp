@@ -25,6 +25,8 @@ class Tournament with _$Tournament {
     required List<SavedPlayer> participants,
     @Default('') String createdAt,
     @Default('') String updatedAt,
+    @Default('') String startedAt,
+    @Default('') String completedAt,
   }) = _Tournament;
 
   factory Tournament.fromJson(Map<String, dynamic> json) => _$TournamentFromJson(json);

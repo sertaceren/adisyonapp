@@ -5,6 +5,7 @@ import 'package:adisyonapp/shared/widgets/app_button.dart';
 import 'package:adisyonapp/features/tournament/presentation/controllers/tournament_controller.dart';
 import 'package:adisyonapp/features/tournament/domain/entities/tournament.dart';
 import 'package:adisyonapp/features/tournament/presentation/pages/tournament_setup_page.dart';
+import 'package:adisyonapp/features/tournament/presentation/pages/tournament_detail_page.dart';
 import 'package:intl/intl.dart';
 
 class TournamentsPage extends ConsumerWidget {
@@ -147,6 +148,16 @@ class TournamentsPage extends ConsumerWidget {
         trailing: PopupMenuButton<String>(
           onSelected: (value) => _handleTournamentAction(context, ref, tournament, value),
           itemBuilder: (context) => [
+            const PopupMenuItem(
+              value: 'detail',
+              child: Row(
+                children: [
+                  Icon(Icons.info),
+                  SizedBox(width: 8),
+                  Text('Detaylar'),
+                ],
+              ),
+            ),
             if (tournament.status == TournamentStatus.upcoming) ...[
               const PopupMenuItem(
                 value: 'start',
@@ -171,16 +182,18 @@ class TournamentsPage extends ConsumerWidget {
                 ),
               ),
             ],
-            const PopupMenuItem(
-              value: 'edit',
-              child: Row(
-                children: [
-                  Icon(Icons.edit),
-                  SizedBox(width: 8),
-                  Text('Düzenle'),
-                ],
+            if (tournament.status != TournamentStatus.completed) ...[
+              const PopupMenuItem(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit),
+                    SizedBox(width: 8),
+                    Text('Düzenle'),
+                  ],
+                ),
               ),
-            ),
+            ],
             const PopupMenuItem(
               value: 'delete',
               child: Row(
@@ -199,6 +212,14 @@ class TournamentsPage extends ConsumerWidget {
 
   void _handleTournamentAction(BuildContext context, WidgetRef ref, Tournament tournament, String action) {
     switch (action) {
+      case 'detail':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TournamentDetailPage(tournament: tournament),
+          ),
+        );
+        break;
       case 'start':
         ref.read(tournamentsControllerProvider.notifier).startTournament(tournament.id);
         break;

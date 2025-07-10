@@ -27,6 +27,8 @@ mixin _$Tournament {
   List<SavedPlayer> get participants => throw _privateConstructorUsedError;
   String get createdAt => throw _privateConstructorUsedError;
   String get updatedAt => throw _privateConstructorUsedError;
+  String get startedAt => throw _privateConstructorUsedError;
+  String get completedAt => throw _privateConstructorUsedError;
 
   /// Serializes this Tournament to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -51,7 +53,9 @@ abstract class $TournamentCopyWith<$Res> {
       TournamentStatus status,
       List<SavedPlayer> participants,
       String createdAt,
-      String updatedAt});
+      String updatedAt,
+      String startedAt,
+      String completedAt});
 }
 
 /// @nodoc
@@ -76,6 +80,8 @@ class _$TournamentCopyWithImpl<$Res, $Val extends Tournament>
     Object? participants = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? startedAt = null,
+    Object? completedAt = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -106,6 +112,14 @@ class _$TournamentCopyWithImpl<$Res, $Val extends Tournament>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as String,
+      startedAt: null == startedAt
+          ? _value.startedAt
+          : startedAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      completedAt: null == completedAt
+          ? _value.completedAt
+          : completedAt // ignore: cast_nullable_to_non_nullable
+              as String,
     ) as $Val);
   }
 }
@@ -125,7 +139,9 @@ abstract class _$$TournamentImplCopyWith<$Res>
       TournamentStatus status,
       List<SavedPlayer> participants,
       String createdAt,
-      String updatedAt});
+      String updatedAt,
+      String startedAt,
+      String completedAt});
 }
 
 /// @nodoc
@@ -148,6 +164,8 @@ class __$$TournamentImplCopyWithImpl<$Res>
     Object? participants = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? startedAt = null,
+    Object? completedAt = null,
   }) {
     return _then(_$TournamentImpl(
       id: null == id
@@ -178,6 +196,14 @@ class __$$TournamentImplCopyWithImpl<$Res>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as String,
+      startedAt: null == startedAt
+          ? _value.startedAt
+          : startedAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      completedAt: null == completedAt
+          ? _value.completedAt
+          : completedAt // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -192,7 +218,9 @@ class _$TournamentImpl implements _Tournament {
       this.status = TournamentStatus.upcoming,
       required final List<SavedPlayer> participants,
       this.createdAt = '',
-      this.updatedAt = ''})
+      this.updatedAt = '',
+      this.startedAt = '',
+      this.completedAt = ''})
       : _participants = participants;
 
   factory _$TournamentImpl.fromJson(Map<String, dynamic> json) =>
@@ -221,10 +249,16 @@ class _$TournamentImpl implements _Tournament {
   @override
   @JsonKey()
   final String updatedAt;
+  @override
+  @JsonKey()
+  final String startedAt;
+  @override
+  @JsonKey()
+  final String completedAt;
 
   @override
   String toString() {
-    return 'Tournament(id: $id, name: $name, type: $type, status: $status, participants: $participants, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Tournament(id: $id, name: $name, type: $type, status: $status, participants: $participants, createdAt: $createdAt, updatedAt: $updatedAt, startedAt: $startedAt, completedAt: $completedAt)';
   }
 
   @override
@@ -241,13 +275,26 @@ class _$TournamentImpl implements _Tournament {
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+                other.updatedAt == updatedAt) &&
+            (identical(other.startedAt, startedAt) ||
+                other.startedAt == startedAt) &&
+            (identical(other.completedAt, completedAt) ||
+                other.completedAt == completedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, name, type, status,
-      const DeepCollectionEquality().hash(_participants), createdAt, updatedAt);
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      name,
+      type,
+      status,
+      const DeepCollectionEquality().hash(_participants),
+      createdAt,
+      updatedAt,
+      startedAt,
+      completedAt);
 
   /// Create a copy of Tournament
   /// with the given fields replaced by the non-null parameter values.
@@ -273,7 +320,9 @@ abstract class _Tournament implements Tournament {
       final TournamentStatus status,
       required final List<SavedPlayer> participants,
       final String createdAt,
-      final String updatedAt}) = _$TournamentImpl;
+      final String updatedAt,
+      final String startedAt,
+      final String completedAt}) = _$TournamentImpl;
 
   factory _Tournament.fromJson(Map<String, dynamic> json) =
       _$TournamentImpl.fromJson;
@@ -292,6 +341,10 @@ abstract class _Tournament implements Tournament {
   String get createdAt;
   @override
   String get updatedAt;
+  @override
+  String get startedAt;
+  @override
+  String get completedAt;
 
   /// Create a copy of Tournament
   /// with the given fields replaced by the non-null parameter values.
